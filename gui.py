@@ -1,27 +1,26 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from pdf_generator import PDFGenerator
+from pdf_generator import PDFGenerator  # Ensure you have this module
 from model import (
     csv_carre_keys_list,
     csv_hexa_keys_list,
     csv_frise_keys_list,
     csv_tapis_keys_list,
-    csv_baguettes_keys_list
+    csv_baguettes_keys_list,
+    csv_baguettes_dict,
+    csv_carre_dict,
+    csv_frise_dict,
+    csv_hexa_dict,
+    csv_tapis_dict
 )
-
-from color import csv_couleur_keys_list
-
-print(csv_couleur_keys_list)
+from color import csv_couleur_keys_list, csv_couleur_dict
 
 class UserFormApp:
-    """Main application class for the user form."""
     def __init__(self, root):
         self.root = root
         self.root.title("PDF Generator")
-        self.root.geometry("600x1000")
-        self.root.resizable(False, False)
+        self.root.geometry("1300x700")
 
-        # Model to Variants mapping
         self.model_variants = {
             "Square": csv_carre_keys_list,
             "Hexagonal": csv_hexa_keys_list,
@@ -30,174 +29,239 @@ class UserFormApp:
             "Baguettes": csv_baguettes_keys_list
         }
 
+        self.variant_price_map = csv_baguettes_dict
+
         self.color_choices = csv_couleur_keys_list
-        self.entries = []  # Store all added model/variant/color entries
+        self.entries_data = []
 
         self.create_widgets()
 
+        self.add_entry_row()  # Add one row initially
+
     def create_widgets(self):
-        """Create and layout the widgets."""
-        # First Name
-        tk.Label(self.root, text="First Name:").pack(pady=(10, 0))
-        self.entry_first_name = tk.Entry(self.root, width=50)
-        self.entry_first_name.pack()
+        # Title
+        title = tk.Label(self.root, text="PDF GENERATOR FORM", font=("Arial", 24))
+        title.pack(pady=10)
 
-        # Last Name
-        tk.Label(self.root, text="Last Name:").pack(pady=(10, 0))
-        self.entry_last_name = tk.Entry(self.root, width=50)
-        self.entry_last_name.pack()
+        # Personal Details
+        client_frame = tk.LabelFrame(self.root, text="Personal Details", padx=10, pady=10)
+        client_frame.pack(fill="x", padx=20, pady=10)
 
-        # Contact Details
-        tk.Label(self.root, text="Contact Details:").pack(pady=(10, 0))
-        self.entry_contact = tk.Entry(self.root, width=50)
-        self.entry_contact.pack()
+        # Full Name
+        tk.Label(client_frame, text="Full Name:").grid(row=0, column=0, sticky="w")
+        self.full_name = tk.Entry(client_frame, width=40)
+        self.full_name.grid(row=0, column=1, padx=5, pady=5)
 
         # Address
-        tk.Label(self.root, text="Address:").pack(pady=(10, 0))
-        self.entry_address = tk.Entry(self.root, width=50)
-        self.entry_address.pack()
+        tk.Label(client_frame, text="Address:").grid(row=0, column=2, sticky="w")
+        self.address = tk.Entry(client_frame, width=40)
+        self.address.grid(row=0, column=3, padx=5, pady=5)
 
-        # Section for adding model/variant/color entries
-        self.entry_section = tk.LabelFrame(self.root, text="Add Entry", padx=10, pady=10)
-        self.entry_section.pack(pady=(20, 0), fill="x")
+        # Phone Number
+        tk.Label(client_frame, text="Phone Number:").grid(row=1, column=0, sticky="w")
+        self.phone = tk.Entry(client_frame, width=40)
+        self.phone.grid(row=1, column=1, padx=5, pady=5)
 
-        # Model Dropdown
-        tk.Label(self.entry_section, text="Model:").grid(row=0, column=0, sticky="w")
-        self.model_var = tk.StringVar()
-        self.model_combo = ttk.Combobox(self.entry_section, textvariable=self.model_var, state="readonly", width=20)
-        self.model_combo['values'] = list(self.model_variants.keys())
-        self.model_combo.grid(row=0, column=1, padx=5, pady=5)
-        self.model_combo.bind("<<ComboboxSelected>>", self.update_variant_dropdown)
-
-        # Variant Dropdown
-        tk.Label(self.entry_section, text="Variant:").grid(row=1, column=0, sticky="w")
-        self.variant_var = tk.StringVar()
-        self.variant_combo = ttk.Combobox(self.entry_section, textvariable=self.variant_var, state="readonly", width=20)
-        self.variant_combo.grid(row=1, column=1, padx=5, pady=5)
-
-        # Color Selection
-        tk.Label(self.entry_section, text="Select up to 5 Colors:").grid(row=2, column=0, sticky="w", pady=(10, 0), columnspan=2)
-        color_frame = tk.Frame(self.entry_section)
-        color_frame.grid(row=3, column=0, columnspan=2)
-
-        self.color_listbox = tk.Listbox(color_frame, selectmode="multiple", height=6, width=30, exportselection=False)
-        self.color_listbox.pack(side="left", fill="y")
-
-        color_scrollbar = tk.Scrollbar(color_frame, orient="vertical")
-        color_scrollbar.pack(side="right", fill="y")
-
-        self.color_listbox.config(yscrollcommand=color_scrollbar.set)
-        color_scrollbar.config(command=self.color_listbox.yview)
-
-        for color in self.color_choices:
-            self.color_listbox.insert(tk.END, color)
-
-        self.color_status_var = tk.StringVar()
-        self.color_status_label = tk.Label(self.entry_section, textvariable=self.color_status_var)
-        self.color_status_label.grid(row=4, column=0, columnspan=2)
-        self.color_listbox.bind("<<ListboxSelect>>", self.on_color_select)
+        # Email
+        tk.Label(client_frame, text="Email:").grid(row=1, column=2, sticky="w")
+        self.email = tk.Entry(client_frame, width=40)
+        self.email.grid(row=1, column=3, padx=5, pady=5)
 
         # Add Entry Button
-        tk.Button(self.entry_section, text="Add Entry", command=self.add_entry).grid(row=5, column=0, columnspan=2, pady=(10, 0))
+        tk.Button(self.root, text="Add Entry", bg="green", fg="white", command=self.add_entry_row).pack(pady=10)
 
-        # Preview of added entries
-        tk.Label(self.root, text="Added Entries:").pack(pady=(20, 0))
-        self.entries_preview = tk.Listbox(self.root, height=6, width=70)
-        self.entries_preview.pack()
+        # Table Frame
+        table_container = tk.Frame(self.root)
+        table_container.pack(padx=20, fill="both", expand=True)
 
-        # Generate PDF Button
-        tk.Button(self.root, text="Generate PDF", command=self.generate_pdf).pack(pady=20)
+        canvas = tk.Canvas(table_container)
+        scrollbar = tk.Scrollbar(table_container, orient="vertical", command=canvas.yview)
+        self.table_frame = tk.Frame(canvas)
 
-    def update_variant_dropdown(self, event):
-        selected_model = self.model_var.get()
-        variants = self.model_variants.get(selected_model, [])
-        self.variant_combo['values'] = variants
-        if variants:
-            self.variant_combo.current(0)
-        else:
-            self.variant_combo.set('')
-
-    def on_color_select(self, event):
-        selected_indices = self.color_listbox.curselection()
-        if len(selected_indices) > 5:
-            self.color_listbox.selection_clear(selected_indices[-1])
-            messagebox.showwarning("Limit Reached", "You can select up to 5 colors only.")
-        self.update_color_status()
-
-    def update_color_status(self):
-        count = len(self.color_listbox.curselection())
-        self.color_status_var.set(f"Selected Colors: {count} / 5")
-
-    def add_entry(self):
-        model = self.model_var.get().strip()
-        variant = self.variant_var.get().strip()
-        selected_colors = [self.color_choices[i] for i in self.color_listbox.curselection()]
-
-        if not model or not variant:
-            messagebox.showerror("Input Error", "Please select both model and variant.")
-            return
-
-        if not (1 <= len(selected_colors) <= 5):
-            messagebox.showerror("Input Error", "Please select between 1 and 5 colors.")
-            return
-
-        entry = {
-            "Model": model,
-            "Variant": variant,
-            "Colors": selected_colors
-        }
-
-        self.entries.append(entry)
-        color_str = ", ".join(selected_colors)
-        self.entries_preview.insert(tk.END, f"{model} - {variant} - {color_str}")
-
-        # Reset inputs
-        self.model_var.set("")
-        self.variant_var.set("")
-        self.variant_combo['values'] = []
-        self.color_listbox.selection_clear(0, tk.END)
-        self.update_color_status()
-
-    def generate_pdf(self):
-        first_name = self.entry_first_name.get().strip()
-        last_name = self.entry_last_name.get().strip()
-        contact = self.entry_contact.get().strip()
-        address = self.entry_address.get().strip()
-
-        if not all([first_name, last_name, contact, address]):
-            messagebox.showerror("Input Error", "Please fill in all personal details.")
-            return
-
-        if not self.entries:
-            messagebox.showerror("Input Error", "Please add at least one model entry.")
-            return
-
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".pdf",
-            filetypes=[("PDF files", "*.pdf")],
-            title="Save PDF"
+        self.table_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
         )
 
+        canvas.create_window((0, 0), window=self.table_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Table Header
+        headers = ["Model", "Variant", "Qty", "Color 1", "Color 2", "Color 3", "Color 4", "Color 5", "Amount", "Delete"]
+        for idx, text in enumerate(headers):
+            col_width = 12
+            if text.startswith("Color"):
+                col_width = 20  # widen Color headers to match combobox width
+            tk.Label(self.table_frame, text=text, relief="ridge", width=col_width).grid(row=0, column=idx, sticky="nsew")
+
+        # Bottom Buttons
+        bottom_frame = tk.Frame(self.root)
+        bottom_frame.pack(pady=20)
+
+        tk.Button(bottom_frame, text="Generate PDF", bg="green", fg="white", command=self.generate_pdf).pack(side="left", padx=10)
+        tk.Button(bottom_frame, text="Close", bg="red", fg="white", command=self.root.quit).pack(side="left", padx=10)
+
+    def add_entry_row(self):
+        row_index = len(self.entries_data) + 1
+        row_widgets = {}
+
+        model_var = tk.StringVar()
+        model_cb = ttk.Combobox(self.table_frame, textvariable=model_var, state="readonly", width=12)
+        model_cb['values'] = list(self.model_variants.keys())
+        model_cb.grid(row=row_index, column=0, padx=1, pady=1)
+        row_widgets["Model"] = model_var
+
+        variant_var = tk.StringVar()
+        variant_cb = ttk.Combobox(self.table_frame, textvariable=variant_var, state="readonly", width=12)
+        variant_cb.grid(row=row_index, column=1, padx=1, pady=1)
+        row_widgets["Variant"] = variant_var
+
+
+        def update_variant_options(event=None):
+            selected_model = model_var.get()
+            variants = self.model_variants.get(selected_model, [])
+            variant_cb['values'] = variants
+            variant_var.set(variants[0] if variants else "")
+
+        model_cb.bind("<<ComboboxSelected>>", update_variant_options)
+
+        qty_entry = tk.Entry(self.table_frame, width=12)
+        qty_entry.grid(row=row_index, column=2)
+        row_widgets["Quantity"] = qty_entry
+
+        for i in range(1, 6):
+            color_var = tk.StringVar()
+            color_cb = ttk.Combobox(self.table_frame, textvariable=color_var, state="readonly", width=20)
+            color_cb['values'] = self.color_choices
+            color_cb.grid(row=row_index, column=2 + i)
+            row_widgets[f"Color{i}"] = color_var
+
+        amount_var = tk.StringVar()
+        amount_entry = tk.Entry(self.table_frame, textvariable=amount_var, state="readonly", width=12)
+        amount_entry.grid(row=row_index, column=8)
+        row_widgets["Amount"] = amount_var
+
+        # Bind the variant dropdown to get the Amount automatically
+        #variant_cb.bind("<<ComboboxSelected>>", lambda e, var_cb=variant_cb, amt_var=amount_entry: self.update_amount(var_cb, amt_var))
+        def update_amount(event=None):
+            selected_model = model_var.get()
+            selected_variant = variant_var.get()
+
+            # refactor thsi later, use enums
+            match selected_model:
+                case "Square" :
+                    price = csv_carre_dict.get(selected_variant, 0)
+                case "Hexagonal" :
+                    price = csv_hexa_dict.get(selected_variant, 0)
+                case "Frieze" :
+                    price = csv_frise_dict.get(selected_variant, 0)
+                case "Berber Carpet" :
+                    price = csv_tapis_dict.get(selected_variant, 0)
+                case "Baguettes" :
+                    price = csv_baguettes_dict.get(selected_variant, 0)
+                case _:
+                    print("Invalid model")
+            
+            row_widgets["Variant_Price"] = price
+            #amount_var.set(str(price))
+
+        variant_cb.bind("<<ComboboxSelected>>", update_amount)
+    
+        delete_btn = tk.Button(self.table_frame, text="Delete", bg="red", fg="white",
+                               command=lambda r=row_index: self.delete_entry_row(r))
+        delete_btn.grid(row=row_index, column=9)
+        row_widgets["Row"] = row_index
+
+        self.entries_data.append(row_widgets)
+
+    def delete_entry_row(self, row_index):
+        row_widgets = self.entries_data[row_index - 1]
+        for widget in self.table_frame.grid_slaves():
+            if int(widget.grid_info()["row"]) == row_index:
+                widget.destroy()
+        self.entries_data[row_index - 1] = None
+    
+    def average_prices(self, prices):
+        # Filter out None and empty strings
+        valid_prices = [int(p) for p in prices if p not in (None, '')]
+        
+        if not valid_prices:
+            return 0  # Avoid division by zero
+        
+        return sum(valid_prices) / len(valid_prices)
+
+
+    def collect_entry_data(self):
+        data = []
+        for row in self.entries_data:
+            if row is None:
+                continue
+
+            color_arr = [row[f"Color{i}"].get() for i in range(1, 6)]
+            color_prices_arr = [csv_couleur_dict.get(row[f"Color{i}"].get()) for i in range(1, 6)]
+            color_prices_average = self.average_prices(color_prices_arr)
+            qty_str = row["Quantity"].get()
+            qty = int(qty_str) if qty_str.strip().isdigit() else 1
+            variant_price = row["Variant_Price"]
+            unit_amount = int(variant_price) + color_prices_average
+            total_amount = unit_amount * qty
+
+            entry = {
+                "Model": row["Model"].get(),
+                "Variant": row["Variant"].get(),
+                "Variant_Price": row["Variant_Price"],
+                "Quantity": row["Quantity"].get(),
+                "Colors": color_arr,
+                #"Colors_Prices": [csv_couleur_dict.get(row[f"Color{i}"].get()) for i in range(1, 6)],
+                "Colors_Prices": color_prices_arr,
+                "Colors_Prices_Average": color_prices_average,
+                "Unit_Amount": unit_amount,
+                "Total_Amount": total_amount
+            }
+            
+            data.append(entry)
+        return data
+
+    def generate_pdf(self):
+        full_name = self.full_name.get().strip()
+        address = self.address.get().strip()
+        phone = self.phone.get().strip()
+        email = self.email.get().strip()
+
+        if not all([full_name, address, phone, email]):
+            messagebox.showerror("Input Error", "Please complete all personal details.")
+            return
+
+        entries = self.collect_entry_data()
+        if not entries:
+            messagebox.showerror("Input Error", "Please add at least one entry.")
+            return
+
+        file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
         if not file_path:
-            return  # User cancelled
+            return
 
         data = {
-            "First Name": first_name,
-            "Last Name": last_name,
-            "Contact": contact,
+            "Full Name": full_name,
             "Address": address,
-            "Entries": self.entries  # List of dicts: Model, Variant, Colors
+            "Phone": phone,
+            "Email": email,
+            "Entries": entries
         }
+        print(data)
 
-        pdf_generator = PDFGenerator(file_path)
         try:
-            pdf_generator.create_pdf(data)
+            pdf = PDFGenerator(file_path)
+            pdf.create_pdf(data)
             messagebox.showinfo("Success", f"PDF saved successfully at:\n{file_path}")
-        except IOError as e:
-            messagebox.showerror("Error", str(e))
+        except Exception as e:
+            messagebox.showerror("PDF Error", str(e))
 
-
-# Only run this if this file is run directly (not imported)
 if __name__ == "__main__":
     root = tk.Tk()
     app = UserFormApp(root)
