@@ -112,7 +112,7 @@ class UserFormApp:
         scrollbar.pack(side="right", fill="y")
 
         # Table Header
-        headers = ["Model", "Variant", "Qty", "Color 1", "Color 2", "Color 3", "Color 4", "Color 5", "Amount", "Delete"]
+        headers = ["Model", "Variant", "Qty", "Color 1", "Color 2", "Color 3", "Color 4", "Color 5", "Delete"]
         for idx, text in enumerate(headers):
             col_width = 12
             if text.startswith("Color"):
@@ -162,12 +162,13 @@ class UserFormApp:
             color_cb['values'] = self.color_choices
             color_cb.grid(row=row_index, column=2 + i)
             row_widgets[f"Color{i}"] = color_var
-
+        
+        """ 
         amount_var = tk.StringVar()
         amount_entry = tk.Entry(self.table_frame, textvariable=amount_var, state="readonly", width=12)
         amount_entry.grid(row=row_index, column=8)
         row_widgets["Amount"] = amount_var
-
+        """
         # Bind the variant dropdown to get the Amount automatically
         #variant_cb.bind("<<ComboboxSelected>>", lambda e, var_cb=variant_cb, amt_var=amount_entry: self.update_amount(var_cb, amt_var))
         def update_amount(event=None):
@@ -196,7 +197,7 @@ class UserFormApp:
     
         delete_btn = tk.Button(self.table_frame, text="Delete", bg="red", fg="white",
                                command=lambda r=row_index: self.delete_entry_row(r))
-        delete_btn.grid(row=row_index, column=9)
+        delete_btn.grid(row=row_index, column=8)
         row_widgets["Row"] = row_index
 
         self.entries_data.append(row_widgets)

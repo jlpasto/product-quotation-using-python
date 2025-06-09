@@ -19,7 +19,7 @@ class PDFGenerator:
         styles = getSampleStyleSheet()
 
         # Title (centered)
-        title = Paragraph("PDF Entry Summary", styles['Title'])
+        title = Paragraph("Order Summary", styles['Title'])
         elements.append(title)
 
         # Right-aligned Date and Quotation No. in the next line
@@ -46,8 +46,8 @@ class PDFGenerator:
         <b>Address:</b> {data['Address']}<br/>
         <b>Phone:</b> {data['Phone']}<br/>
         <b>Email:</b> {data['Email']}<br/>
-        <b>NIF:</b> {data.get('NIF', '')}<br/>
-        <b>NIS:</b> {data.get('NIS', '')}<br/>
+        <b>NIF:</b> {data.get('Nif', '')}<br/>
+        <b>NIS:</b> {data.get('Nis', '')}<br/>
         <b>RC:</b> {data.get('RC', '')}<br/>
         <b>Article:</b> {data.get('Article', '')}
         """
@@ -55,7 +55,7 @@ class PDFGenerator:
         elements.append(Spacer(1, 20))
 
         # Table Header
-        table_data = [["Model", "Variant", "Colors", "Quantity", "Amount"]]
+        table_data = [["Nom Modele", "Variant", "Couleurs", "Prix Unitaire", "Total HT"]]
 
         # Table Body
         sub_total = 0
@@ -69,9 +69,9 @@ class PDFGenerator:
             color_list = "<br/>".join([f"• {color}" for color in entry["Colors"] if color])
             color_paragraph = Paragraph(color_list, styles['Normal'])
 
-            table_data.append([model, variant, color_paragraph, quantity, f"{amount:.2f} DA"])
+            table_data.append([model, variant, color_paragraph, quantity, f"{amount:.2f}"])
 
-        table = Table(table_data, colWidths=[80, 100, 180, 60, 80])
+        table = Table(table_data, colWidths=[80, 100, 180, 80, 60])
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
@@ -87,15 +87,16 @@ class PDFGenerator:
         # Summary section
         tax_rate = 0.19  # 19% tax
         #discount = data.get("Discount", 0)  # Optional
-        discount = 0  # Optional
+        discount = 10  # Optional
         tax = sub_total * tax_rate
         grand_total = sub_total + tax - discount
 
         summary_data = [
-            ["", "", "Sub Total", f"{sub_total:.2f}"],
-            ["", "", "Tax (19%)", f"{tax:.2f}"],
-            ["", "", "Discount", f"-{discount:.2f}"],
-            ["", "", "Grand Total", f"{grand_total:.2f}"],
+            ["", "", "Sous Total HT", f"{sub_total:.2f}".replace('.', ',')],
+            ["", "", "TVA (19%)", f"{tax:.2f}".replace('.', ',')],
+            ["", "", "Total TTC", f"{sub_total + tax:.2f}".replace('.', ',')],
+            ["", "", "Acompte", f"-{discount:.2f}".replace('.', ',')],
+            ["", "", "A payer", f"{grand_total:.2f}".replace('.', ',')],
         ]
 
         summary_table = Table(summary_data, colWidths=[80, 100, 200, 80])
@@ -103,7 +104,8 @@ class PDFGenerator:
             ('LINEBELOW', (2, 0), (3, 0), 0.75, colors.black),
             ('LINEBELOW', (2, 1), (3, 1), 0.75, colors.black),
             ('LINEBELOW', (2, 2), (3, 2), 0.75, colors.black),
-            ('LINEBELOW', (2, 3), (3, 3), 1.0, colors.black),
+            ('LINEBELOW', (2, 3), (3, 3), 0.75, colors.black),
+            ('LINEBELOW', (2, 4), (3, 4), 1.0, colors.black),
             ('ALIGN', (2, 0), (3, -1), 'RIGHT'),
             ('FONTNAME', (2, 0), (3, -1), 'Helvetica-Bold'),
         ]))
