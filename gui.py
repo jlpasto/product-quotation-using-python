@@ -67,6 +67,26 @@ class UserFormApp:
         self.email = tk.Entry(client_frame, width=40)
         self.email.grid(row=1, column=3, padx=5, pady=5)
 
+        # Nif
+        tk.Label(client_frame, text="Nif:").grid(row=2, column=0, sticky="w")
+        self.nif = tk.Entry(client_frame, width=40)
+        self.nif.grid(row=2, column=1, padx=5, pady=5)
+
+        # Nis
+        tk.Label(client_frame, text="Nis:").grid(row=2, column=2, sticky="w")
+        self.nis = tk.Entry(client_frame, width=40)
+        self.nis.grid(row=2, column=3, padx=5, pady=5)
+
+        # RC
+        tk.Label(client_frame, text="RC:").grid(row=3, column=0, sticky="w")
+        self.rc = tk.Entry(client_frame, width=40)
+        self.rc.grid(row=3, column=1, padx=5, pady=5)
+
+        # Article
+        tk.Label(client_frame, text="Article:").grid(row=3, column=2, sticky="w")
+        self.article = tk.Entry(client_frame, width=40)
+        self.article.grid(row=3, column=3, padx=5, pady=5)
+
         # Add Entry Button
         tk.Button(self.root, text="Add Entry", bg="green", fg="white", command=self.add_entry_row).pack(pady=10)
 
@@ -109,6 +129,8 @@ class UserFormApp:
     def add_entry_row(self):
         row_index = len(self.entries_data) + 1
         row_widgets = {}
+
+        row_widgets["Variant_Price"] = 0
 
         model_var = tk.StringVar()
         model_cb = ttk.Combobox(self.table_frame, textvariable=model_var, state="readonly", width=12)
@@ -217,7 +239,6 @@ class UserFormApp:
                 "Variant_Price": row["Variant_Price"],
                 "Quantity": row["Quantity"].get(),
                 "Colors": color_arr,
-                #"Colors_Prices": [csv_couleur_dict.get(row[f"Color{i}"].get()) for i in range(1, 6)],
                 "Colors_Prices": color_prices_arr,
                 "Colors_Prices_Average": color_prices_average,
                 "Unit_Amount": unit_amount,
@@ -233,7 +254,12 @@ class UserFormApp:
         phone = self.phone.get().strip()
         email = self.email.get().strip()
 
-        if not all([full_name, address, phone, email]):
+        nif = self.nif.get().strip()
+        nis = self.nis.get().strip()
+        rc = self.rc.get().strip()
+        article = self.article.get().strip()
+
+        if not all([full_name, address, phone, email, nif, nis, rc, article]):
             messagebox.showerror("Input Error", "Please complete all personal details.")
             return
 
@@ -251,8 +277,13 @@ class UserFormApp:
             "Address": address,
             "Phone": phone,
             "Email": email,
+            "Nif": nif,
+            "Nis": nis,
+            "RC": rc,
+            "Article": article,
             "Entries": entries
         }
+        
         print(data)
 
         try:
