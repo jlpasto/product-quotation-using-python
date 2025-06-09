@@ -1,8 +1,16 @@
 import csv
+import os
+import sys
 
 class Model:
-    def __init__(self, file_path: str):
-        self.file_path = file_path
+    def __init__(self, relative_path: str):
+        # If running as a PyInstaller bundle, use the temporary _MEIPASS path
+        if getattr(sys, 'frozen', False):
+            base_path = sys._MEIPASS  # PyInstaller extracts to this temp dir
+        else:
+            base_path = os.path.dirname(__file__)
+
+        self.file_path = os.path.join(base_path, relative_path)
         self.col_model = 'Nom_Model'
         self.col_price = 'Prix'
     

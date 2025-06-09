@@ -15,12 +15,14 @@ from model import (
 )
 from color import csv_couleur_keys_list, csv_couleur_dict
 import re
+from datetime import datetime
+import os
 
 class UserFormApp:
     def __init__(self, root):
         self.root = root
         self.root.title("PDF Generator")
-        self.root.geometry("1300x700")
+        self.root.geometry("1200x700")
 
         self.model_variants = {
             "Square": csv_carre_keys_list,
@@ -331,7 +333,22 @@ class UserFormApp:
             messagebox.showerror("Input Error", "Please add at least one entry.")
             return
 
-        file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+
+        def create_filepath():
+            # Ensure output directory exists
+            output_dir="PDF"
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Get current date and time
+            now = datetime.now()
+            formatted_time = now.strftime("%Y-%m-%d_%H-%M-%S")
+            file_name = f"PDF_Output_{formatted_time}.pdf"
+            file_path = os.path.join(output_dir, file_name)
+
+            return file_path
+        
+        #file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+        file_path = create_filepath()
         if not file_path:
             return
 
