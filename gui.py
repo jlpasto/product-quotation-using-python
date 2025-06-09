@@ -14,6 +14,7 @@ from model import (
     csv_tapis_dict
 )
 from color import csv_couleur_keys_list, csv_couleur_dict
+import re
 
 class UserFormApp:
     def __init__(self, root):
@@ -58,14 +59,42 @@ class UserFormApp:
         self.address.grid(row=0, column=3, padx=5, pady=5)
 
         # Phone Number
+        def validate_phone(event):
+            phone = event.widget.get().strip()
+            if not phone:  # Skip validation if empty
+                return
+            
+            # This regex matches phone numbers with optional +, digits, spaces, dashes, and parentheses
+            pattern = r"^\+?[\d\s\-\(\)]{7,15}$"
+            
+            if not re.match(pattern, phone):
+                messagebox.showerror("Invalid Phone Number", "Please enter a valid phone number.")
+                event.widget.focus_set()  # Set focus back to phone entry if invalid
+
         tk.Label(client_frame, text="Phone Number:").grid(row=1, column=0, sticky="w")
         self.phone = tk.Entry(client_frame, width=40)
         self.phone.grid(row=1, column=1, padx=5, pady=5)
+        self.phone.bind("<FocusOut>", validate_phone)
+
 
         # Email
+        def validate_email(event):
+            email = event.widget.get().strip()
+            if not email:  # Skip validation if empty
+                return
+    
+            # Simple email regex pattern
+            pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+            if not re.match(pattern, email):
+                messagebox.showerror("Invalid Email", "Please enter a valid email address.")
+                event.widget.focus_set()  # Set focus back to email entry if invalid
+
+
         tk.Label(client_frame, text="Email:").grid(row=1, column=2, sticky="w")
         self.email = tk.Entry(client_frame, width=40)
         self.email.grid(row=1, column=3, padx=5, pady=5)
+
+        self.email.bind("<FocusOut>", validate_email)
 
         # Nif
         tk.Label(client_frame, text="Nif:").grid(row=2, column=0, sticky="w")
@@ -152,10 +181,23 @@ class UserFormApp:
 
         model_cb.bind("<<ComboboxSelected>>", update_variant_options)
 
+        # Quantity
         qty_entry = tk.Entry(self.table_frame, width=12)
+        qty_entry.insert(0, "1")
         qty_entry.grid(row=row_index, column=2)
-        row_widgets["Quantity"] = qty_entry
 
+        def on_qty_focus_out(event):
+            value = qty_entry.get().strip()
+            if value == "" or not value.isdigit() or int(value) < 1:
+                messagebox.showwarning("Invalid Quantity", "Quantity must be a number greater than 0.")
+                qty_entry.delete(0, tk.END)
+                qty_entry.insert(0, "1")
+
+        qty_entry.bind("<FocusOut>", on_qty_focus_out)
+
+        row_widgets["Quantity"] = qty_entry
+        
+        # Color
         for i in range(1, 6):
             color_var = tk.StringVar()
             color_cb = ttk.Combobox(self.table_frame, textvariable=color_var, state="readonly", width=20)
@@ -218,7 +260,25 @@ class UserFormApp:
         
         return sum(valid_prices) / len(valid_prices)
 
+    def get_variant_price(self, selected_model, selected_variant):
 
+        # refactor thsi later, use enums
+        price = 0
+        match selected_model:
+            case "Square" :
+                price = csv_carre_dict.get(selected_variant, 0)
+            case "Hexagonal" :
+                price = csv_hexa_dict.get(selected_variant, 0)
+            case "Frieze" :
+                price = csv_frise_dict.get(selected_variant, 0)
+            case "Berber Carpet" :
+                price = csv_tapis_dict.get(selected_variant, 0)
+            case "Baguettes" :
+                price = csv_baguettes_dict.get(selected_variant, 0)
+            case _:
+                print("Invalid model")
+        return int(price)
+    
     def collect_entry_data(self):
         data = []
         for row in self.entries_data:
@@ -229,15 +289,17 @@ class UserFormApp:
             color_prices_arr = [csv_couleur_dict.get(row[f"Color{i}"].get()) for i in range(1, 6)]
             color_prices_average = self.average_prices(color_prices_arr)
             qty_str = row["Quantity"].get()
-            qty = int(qty_str) if qty_str.strip().isdigit() else 1
-            variant_price = row["Variant_Price"]
-            unit_amount = int(variant_price) + color_prices_average
+            qty = int(qty_str) if qty_str.strip().isdigit() and int(qty_str) > 0 else 1
+            selected_model = row["Model"].get()
+            selected_variant = row["Variant"].get()
+            variant_price = self.get_variant_price(selected_model, selected_variant)
+            unit_amount = variant_price + color_prices_average
             total_amount = unit_amount * qty
 
             entry = {
                 "Model": row["Model"].get(),
                 "Variant": row["Variant"].get(),
-                "Variant_Price": row["Variant_Price"],
+                "Variant_Price": variant_price,
                 "Quantity": row["Quantity"].get(),
                 "Colors": color_arr,
                 "Colors_Prices": color_prices_arr,
