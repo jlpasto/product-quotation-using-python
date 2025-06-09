@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, messagebox
 from pdf_generator import PDFGenerator  # Ensure you have this module
 from model import (
     csv_carre_keys_list,
@@ -206,38 +206,6 @@ class UserFormApp:
             color_cb['values'] = self.color_choices
             color_cb.grid(row=row_index, column=2 + i)
             row_widgets[f"Color{i}"] = color_var
-        
-        """ 
-        amount_var = tk.StringVar()
-        amount_entry = tk.Entry(self.table_frame, textvariable=amount_var, state="readonly", width=12)
-        amount_entry.grid(row=row_index, column=8)
-        row_widgets["Amount"] = amount_var
-        """
-        # Bind the variant dropdown to get the Amount automatically
-        #variant_cb.bind("<<ComboboxSelected>>", lambda e, var_cb=variant_cb, amt_var=amount_entry: self.update_amount(var_cb, amt_var))
-        def update_amount(event=None):
-            selected_model = model_var.get()
-            selected_variant = variant_var.get()
-
-            # refactor thsi later, use enums
-            match selected_model:
-                case "Square" :
-                    price = csv_carre_dict.get(selected_variant, 0)
-                case "Hexagonal" :
-                    price = csv_hexa_dict.get(selected_variant, 0)
-                case "Frieze" :
-                    price = csv_frise_dict.get(selected_variant, 0)
-                case "Berber Carpet" :
-                    price = csv_tapis_dict.get(selected_variant, 0)
-                case "Baguettes" :
-                    price = csv_baguettes_dict.get(selected_variant, 0)
-                case _:
-                    print("Invalid model")
-            
-            row_widgets["Variant_Price"] = price
-            #amount_var.set(str(price))
-
-        variant_cb.bind("<<ComboboxSelected>>", update_amount)
     
         delete_btn = tk.Button(self.table_frame, text="Delete", bg="red", fg="white",
                                command=lambda r=row_index: self.delete_entry_row(r))
@@ -264,7 +232,6 @@ class UserFormApp:
 
     def get_variant_price(self, selected_model, selected_variant):
 
-        # refactor thsi later, use enums
         price = 0
         match selected_model:
             case "Square" :
@@ -278,7 +245,7 @@ class UserFormApp:
             case "Baguettes" :
                 price = csv_baguettes_dict.get(selected_variant, 0)
             case _:
-                print("Invalid model")
+                price = 0
         return int(price)
     
     def collect_entry_data(self):
@@ -347,7 +314,6 @@ class UserFormApp:
 
             return file_path
         
-        #file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
         file_path = create_filepath()
         if not file_path:
             return
@@ -363,8 +329,6 @@ class UserFormApp:
             "Article": article,
             "Entries": entries
         }
-        
-        print(data)
 
         try:
             pdf = PDFGenerator(file_path)
