@@ -1,9 +1,9 @@
-1. Extract PDF Generator.zip
-2. Locate pdf_generator.exe inside main folder
-3. Run pdf_generator.exe as Administrator
+1. Extract macos-app (1).zip
+2. Locate PDF Generator.app inside Contents\MacOS folder
+3. Run PDF Generator.app as Administrator
 4. Provide information and click "Generate PDF"
 5. Locate output in PDF folder.
-6. If needed to update CSV files, replace files in main\_internal\CSV folder.
+6. If needed to update CSV files, replace files in Contents\Resources\CSV folder.
 7. Double check that the header in CSV do not have whitespaces in the end. 
 8. Click "Close" button to end the program.
 9. Contact author at jhonloydpastorin.03@gmail.com" for any issues
