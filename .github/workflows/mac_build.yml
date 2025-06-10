@@ -1,0 +1,64 @@
+name: Build macOS App
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the 'main' branch
+  pull_request:
+    branches:
+      - main # Trigger on pull requests targeting the 'main' branch
+  workflow_dispatch: # Allows you to manually trigger the workflow from GitHub UI
+
+jobs:
+  build:
+    runs-on: macos-latest # Use the latest macOS runner
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4 # Action to check out your repository code
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' # Or '3.10', '3.11', '3.12' - choose the Python version your app uses
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install virtualenv # Optional, but good practice
+        virtualenv venv
+        source venv/bin/activate
+        pip install -r requirements.txt # Install your project's dependencies
+        pip install pyinstaller # Install PyInstaller itself
+
+    - name: Build with PyInstaller
+      run: |
+        source venv/bin/activate # Ensure virtual environment is active
+        # Replace 'your_script.py' with your main script name
+        # Adjust --add-data and --icon paths as needed
+        pyinstaller --windowed \
+                    --onefile \
+                    --name "PDF Generator" \
+                    --icon="pdf-export.icns" \
+                    --add-data "CSV:CSV" \
+                    main.py
+
+        # Test the app (optional, for GUI apps a simple launch is hard without display)
+        # /Users/runner/work/your_repo_name/your_repo_name/dist/"PDF Generator.app"/Contents/MacOS/"PDF Generator" --version || true
+
+    - name: Upload macOS app artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-app
+        path: dist/PDF Generator.app # Path to the generated .app bundle
+
+    - name: Create a .zip archive of the app
+      run: |
+        cd dist
+        zip -r "PDF Generator.app.zip" "PDF Generator.app"
+
+    - name: Upload zipped app artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-app-zip
+        path: dist/"PDF Generator.app.zip"
