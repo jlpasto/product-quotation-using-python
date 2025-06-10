@@ -37,7 +37,6 @@ jobs:
         # Replace 'your_script.py' with your main script name
         # Adjust --add-data and --icon paths as needed
         pyinstaller --windowed \
-                    --onefile \
                     --name "PDF Generator" \
                     --icon="pdf-export.icns" \
                     --add-data "CSV:CSV" \
