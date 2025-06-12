@@ -1,6 +1,6 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-from pdf_generator import PDFGenerator  # Ensure you have this module
+from tkinter import ttk, messagebox, filedialog
+from create_pdf import PDFGenerator  # Ensure you have this module
 from model import (
     csv_carre_keys_list,
     csv_hexa_keys_list,
@@ -17,6 +17,9 @@ from color import csv_couleur_keys_list, csv_couleur_dict
 import re
 from datetime import datetime
 import os
+import uuid
+from dateutil.relativedelta import relativedelta
+
 
 class UserFormApp:
     def __init__(self, root):
@@ -255,6 +258,8 @@ class UserFormApp:
                 continue
 
             color_arr = [row[f"Color{i}"].get() for i in range(1, 6)]
+            # removes empty array
+            filtered_color_arr = [color for color in color_arr if color]
             color_prices_arr = [csv_couleur_dict.get(row[f"Color{i}"].get()) for i in range(1, 6)]
             color_prices_average = self.average_prices(color_prices_arr)
             qty_str = row["Quantity"].get()
@@ -266,21 +271,44 @@ class UserFormApp:
             total_amount = unit_amount * qty
 
             entry = {
-                "Model": row["Model"].get(),
-                "Variant": row["Variant"].get(),
-                "Variant_Price": variant_price,
-                "Quantity": row["Quantity"].get(),
-                "Colors": color_arr,
-                "Colors_Prices": color_prices_arr,
-                "Colors_Prices_Average": color_prices_average,
-                "Unit_Amount": unit_amount,
-                "Total_Amount": total_amount
+                "model": row["Model"].get(),
+                "variant": row["Variant"].get(),
+                #"Variant_Price": variant_price,
+                "qty": row["Quantity"].get(),
+                "colors": filtered_color_arr,
+                #"Colors_Prices": color_prices_arr,
+                #"Colors_Prices_Average": color_prices_average,
+                "unitPrice": unit_amount,
+                "total": total_amount
             }
             
             data.append(entry)
         return data
 
+    def generate_invoice_number(self):
+        unique_id = uuid.uuid4()
+        invoice_number = f"INV-{unique_id.hex[:9].upper()}"  # Take first 12 chars of UUID
+        return invoice_number
+
+    def get_invoice_current_date(self):
+        return datetime.now().strftime("%d %b, %Y")
+
+    
+    def get_invoice_issue_date(self, months=3):
+        #Default: 3 months ahead
+        future_date = datetime.now() + relativedelta(months=months)
+        return future_date.strftime("%d %b, %Y")
+
+    def has_missing_model(self, entries):
+        return any(not entry.get('model') for entry in entries)
+    
+
     def generate_pdf(self):
+
+        invoice_no = self.generate_invoice_number()
+        invoice_date = self.get_invoice_current_date()
+        invoice_issue_date = self.get_invoice_issue_date()
+
         full_name = self.full_name.get().strip()
         address = self.address.get().strip()
         phone = self.phone.get().strip()
@@ -296,21 +324,28 @@ class UserFormApp:
             return
 
         entries = self.collect_entry_data()
+
+        print(f"ENTRIES:{entries}")
         if not entries:
             messagebox.showerror("Input Error", "Please add at least one entry.")
             return
 
-
+        is_model_missing = self.has_missing_model(entries)
+        if is_model_missing:
+            messagebox.showerror("Input Error", "One of entries has no selected model.")
+            return
+        
         def create_filepath():
-            # Ensure output directory exists
-            output_dir="PDF"
-            os.makedirs(output_dir, exist_ok=True)
-
-            # Get current date and time
             now = datetime.now()
             formatted_time = now.strftime("%Y-%m-%d_%H-%M-%S")
-            file_name = f"PDF_Output_{formatted_time}.pdf"
-            file_path = os.path.join(output_dir, file_name)
+            default_filename = f"{full_name}_PDF_Output.pdf"
+
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf")],
+                initialfile=default_filename,
+                title="Save PDF As"
+            )
 
             return file_path
         
@@ -318,21 +353,117 @@ class UserFormApp:
         if not file_path:
             return
 
-        data = {
-            "Full Name": full_name,
-            "Address": address,
-            "Phone": phone,
-            "Email": email,
-            "Nif": nif,
-            "Nis": nis,
-            "RC": rc,
-            "Article": article,
-            "Entries": entries
+        # Header details
+        HEADER_COMPANY_NAME = "COMPANY NAME"
+        HEADER_LOGO_PATH = "logo.png"
+        HEADER_ADDRESS_LINE_1 = "1377 Maxwell Farm Road" 
+        HEADER_ADDRESS_LINE_2 = "Reno, CA 89503"
+        HEADER_PHONE = "+01-252-555-0099"
+        HEADER_WEBSITE = "www.yourdomain.com"
+        HEADER_EMAIL = "info@yourmail.com"
+
+        # Invoice details
+        INVOICE_ACCOUNT_NO = invoice_no
+        INVOICE_DATE = invoice_date
+        INVOICE_ISSUE_DATE = invoice_issue_date
+
+        BILL_TO_NAME = full_name
+        BILL_TO_ADDRESS_LINE = address
+        BILL_TO_EMAIL = email
+        BILL_TO_PHONE = phone
+        BILL_TO_NIF = nif
+        BILL_TO_NIS = nis
+        BILL_TO_RC = rc
+        BILL_TO_ARTICLE = article
+        
+        PAYMENT_METHOD_1 = "paypal.username@outlook.com"
+        PAYMENT_METHOD_2 = "Visa, Mastercard, Paypal"
+        
+        # Total computation
+        DISCOUNT_PERCENT = 10
+        TAX_PERCENT = 17
+
+        # Thank you message
+        TY_MSG_HEADING = "Terms & Conditions:"
+        TY_MSG_NOTES_LINE_1 = "• Above magna aliquarn erat volulpat ad minim veniam, quis nostrud"
+        TY_MSG_NOTES_LINE_2 = "• Exercitation ullamco laboris nisi ut aliquip ex ea commodo"
+
+        SIGNATURE_NAME = "Anne-Kahina Yessad"
+        SIGNATURE_TITLE =  "Manager"
+        SIGNATURE_SIGN_IMG = ""
+
+        invoice_data = {
+            "header": {
+                "companyName": HEADER_COMPANY_NAME,
+                "logoPath": HEADER_LOGO_PATH, 
+                "contactInfo": {
+                    "addressLine1": HEADER_ADDRESS_LINE_1,
+                    "addressLine2": HEADER_ADDRESS_LINE_2,
+                    "phone": HEADER_PHONE,
+                    "website": HEADER_WEBSITE,
+                    "email": HEADER_EMAIL
+                }
+            },
+
+            "invoiceDetails": {
+                "accountNo": INVOICE_ACCOUNT_NO,
+                "invoiceDate": INVOICE_DATE,
+                "issueDate": INVOICE_ISSUE_DATE
+            },
+
+            "billTo": {
+                "name": BILL_TO_NAME,
+                "addressLine1": f"Address: {BILL_TO_ADDRESS_LINE}",
+                "email": f"Email: {BILL_TO_EMAIL}",
+                "phone": f"Phone:{BILL_TO_PHONE}",
+                "nif": f"NIF: {BILL_TO_NIF}",
+                "nis": f"NIS: {BILL_TO_NIS}",
+                "rc": f"RC: {BILL_TO_RC}",
+                "article": f"Article: {BILL_TO_ARTICLE}"
+            },
+
+            "items": entries,
+
+            "paymentMethod": {
+                "paymentMethod1": PAYMENT_METHOD_1,
+                "paymentMethod2": PAYMENT_METHOD_2
+            },
+
+            "totals": {
+                "subTotal": 0, # Will be calculated dynamically
+                "discountPercent": DISCOUNT_PERCENT,
+                "discountAmount": 0, # Will be calculated dynamically
+                "taxPercent": TAX_PERCENT,
+                "taxAmount": 0, # Will be calculated dynamically
+                "grandTotal": 0 # Will be calculated dynamically
+            },
+            
+            "thankYouMessage": {
+                "heading": TY_MSG_HEADING,
+                "notesLine1": TY_MSG_NOTES_LINE_1,
+                "notesLine2": TY_MSG_NOTES_LINE_2
+            },
+
+            "signature": {
+                "name": SIGNATURE_NAME,
+                "title": SIGNATURE_TITLE
+            }
         }
+
+        # Recalculate totals based on items
+        calculated_sub_total = sum(item['total'] for item in invoice_data['items'])
+        invoice_data['totals']['subTotal'] = calculated_sub_total
+        invoice_data['totals']['discountAmount'] = (invoice_data['totals']['discountPercent'] / 100) * calculated_sub_total
+        invoice_data['totals']['taxAmount'] = (invoice_data['totals']['taxPercent'] / 100) * calculated_sub_total
+        invoice_data['totals']['grandTotal'] = (
+            calculated_sub_total -
+            invoice_data['totals']['discountAmount'] +
+            invoice_data['totals']['taxAmount']
+        )
 
         try:
             pdf = PDFGenerator(file_path)
-            pdf.create_pdf(data)
+            pdf.create_pdf(invoice_data)
             messagebox.showinfo("Success", f"PDF saved successfully at:\n{file_path}")
         except Exception as e:
             messagebox.showerror("PDF Error", str(e))
