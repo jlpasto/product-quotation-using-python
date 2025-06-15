@@ -137,7 +137,7 @@ class PDFGenerator:
                         font_name=font_charter_bold, font_size=7, color=colors.HexColor('#D5D5D5'))
         self._draw_text(f"Nis       {data['header']['contactInfo']['nis']}", contact_info_x + (32 * mm), contact_info_y_start - (5 * line_height),
                         font_name=font_charter_bold, font_size=7, color=colors.HexColor('#D5D5D5'))
-        self._draw_text(f"Nif     {data['header']['contactInfo']['nif']}", contact_info_x, contact_info_y_start - (6 * line_height) + (1 * mm),
+        self._draw_text(f"Nif    {data['header']['contactInfo']['nif']}", contact_info_x, contact_info_y_start - (6 * line_height) + (1 * mm),
                         font_name=font_charter_bold, font_size=7, color=colors.HexColor('#D5D5D5'))
         self._draw_text(f"Article  {data['header']['contactInfo']['article']}", contact_info_x + (32 * mm), contact_info_y_start - (6 * line_height) + (1 * mm),
                         font_name=font_charter_bold, font_size=7, color=colors.HexColor('#D5D5D5'))
@@ -187,7 +187,7 @@ class PDFGenerator:
                         font_name=font_charter, font_size=7, color=colors.HexColor('#5E5E5E'))
         self._draw_text(f"Nis       {data['header']['contactInfo']['nis']}", bill_to_x + (32 * mm), current_y_bill_to,
                         font_name=font_charter, font_size=7, color=colors.HexColor('#5E5E5E'))
-        self._draw_text(f"Nif     {data['header']['contactInfo']['nif']}", bill_to_x, current_y_bill_to - (3 * mm),
+        self._draw_text(f"Nif    {data['header']['contactInfo']['nif']}", bill_to_x, current_y_bill_to - (3 * mm),
                         font_name=font_charter, font_size=7, color=colors.HexColor('#5E5E5E'))
         self._draw_text(f"Article  {data['header']['contactInfo']['article']}", bill_to_x + (32 * mm), current_y_bill_to - (3 * mm),
                         font_name=font_charter, font_size=7, color=colors.HexColor('#5E5E5E'))
@@ -278,11 +278,11 @@ class PDFGenerator:
             # Draw individual cell data
             self._draw_text(item['model'], table_start_x, y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor('#333333'))
-            self._draw_text(f"{item['unitPrice']}", table_start_x + sum(col_widths[:3]) - (5 * mm), y_single_line_cells,
+            self._draw_text(f"{float(item['unitPrice']):.2f}".replace('.', ','), table_start_x + sum(col_widths[:3]) - (5 * mm), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor('#333333'), alignment='right')
             self._draw_text(str(item['qty']), table_start_x + sum(col_widths[:4]) - (5 * mm), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor('#333333'), alignment='right')
-            self._draw_text(f"{item['total']}", table_start_x + sum(col_widths) - (8 * mm), y_single_line_cells,
+            self._draw_text(f"{float(item['total']):.2f}".replace('.', ','), table_start_x + sum(col_widths) - (8 * mm), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor('#333333'), alignment='right')
 
             # Draw color lines with bullets
@@ -335,13 +335,17 @@ class PDFGenerator:
                             font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
             current_y_right -= (8 * mm)
 
-        draw_total_row("Sous Total HT", data['totals']['subTotal'])
-        draw_total_row("TVA", data['totals']['taxAmount'])
-        draw_total_row("Total TTC", data['totals']['total_ttc'])
+        formatted_subtotal = f"{float(data['totals']['subTotal']):.2f}".replace('.', ',')
+        formatted_tax = f"{float(data['totals']['taxAmount']):.2f}".replace('.', ',')
+        formatted_total_ttc = f"{float(data['totals']['total_ttc']):.2f}".replace('.', ',')
+
+        draw_total_row("Sous Total HT", formatted_subtotal)
+        draw_total_row("TVA", formatted_tax)
+        draw_total_row("Total TTC", formatted_total_ttc)
 
         self._draw_text("Acompte", total_label_x, current_y_right,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#717070'))
-        self._draw_text(f"{data['totals']['discountAmount']}", total_value_x, current_y_right,
+        self._draw_text(f"{float(data['totals']['discountAmount']):.2f}".replace('.', ','), total_value_x, current_y_right,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
         current_y_right -= (5 * mm)
 
@@ -356,7 +360,8 @@ class PDFGenerator:
         grand_total_text_y = current_y_right - (grand_total_rect_height / 2)
         self._draw_text("A PAYER", rect_x_start + (2 * mm), grand_total_text_y,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#FFFFFF'))
-        self._draw_text(f"{data['totals']['grandTotal']}", total_value_x, grand_total_text_y,
+        formatted_grand_total = f"{float(data['totals']['grandTotal']):.2f}".replace('.', ',')
+        self._draw_text(formatted_grand_total, total_value_x, grand_total_text_y,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#FFFFFF'), alignment='right')
 
         # Update vertical pointer
@@ -470,7 +475,9 @@ if __name__ == "__main__":
         ],
         "paymentMethod": {
             "paypal": "paypal.username@outlook.com",
-            "cardAccept": "Cheque   espèces   virement"
+            "cardAccept": "Cheque   espèces   virement",
+            "paymentMethod1": "Cheque   espèces   virement",
+            "paymentMethod2": "Cheque   espèces   virement"
         },
         "totals": {
             "subTotal": 0, # Will be calculated dynamically
@@ -494,9 +501,9 @@ if __name__ == "__main__":
     # Totals computation
     invoice_data['totals']['subTotal'] = 122
     invoice_data['totals']['discountAmount'] = 10
-    invoice_data['totals']['taxAmount'] = "23,18"
-    invoice_data['totals']['total_ttc'] = "145,18"
-    invoice_data['totals']['grandTotal'] = "135,18"
+    invoice_data['totals']['taxAmount'] = 23.18
+    invoice_data['totals']['total_ttc'] = 145.18
+    invoice_data['totals']['grandTotal'] = 135.18
 
     output_pdf_path = "replicated_invoice_canvas_final.pdf"
     pdf_gen = PDFGenerator(output_pdf_path)

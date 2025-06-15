@@ -59,9 +59,13 @@ class UserFormApp:
         self.full_name.grid(row=0, column=1, padx=5, pady=5)
 
         # Address
-        tk.Label(client_frame, text="Address:").grid(row=0, column=2, sticky="w")
+        tk.Label(client_frame, text="Address Line 1:").grid(row=0, column=2, sticky="w")
         self.address = tk.Entry(client_frame, width=40)
         self.address.grid(row=0, column=3, padx=5, pady=5)
+
+        tk.Label(client_frame, text="Address Line 2:").grid(row=0, column=4, sticky="w")
+        self.address_2 = tk.Entry(client_frame, width=40)
+        self.address_2.grid(row=0, column=5, padx=5, pady=5)
 
         # Phone Number
         def validate_phone(event):
@@ -287,17 +291,17 @@ class UserFormApp:
 
     def generate_invoice_number(self):
         unique_id = uuid.uuid4()
-        invoice_number = f"INV-{unique_id.hex[:9].upper()}"  # Take first 12 chars of UUID
+        invoice_number = f"{unique_id.hex[:8].upper()}"  # Take first 12 chars of UUID
         return invoice_number
 
     def get_invoice_current_date(self):
-        return datetime.now().strftime("%d %b, %Y")
+        return datetime.now().strftime("%m/%d/%Y")
 
     
     def get_invoice_issue_date(self, months=3):
         #Default: 3 months ahead
         future_date = datetime.now() + relativedelta(months=months)
-        return future_date.strftime("%d %b, %Y")
+        return future_date.strftime("%m/%d/%Y")
 
     def has_missing_model(self, entries):
         return any(not entry.get('model') for entry in entries)
@@ -311,6 +315,7 @@ class UserFormApp:
 
         full_name = self.full_name.get().strip()
         address = self.address.get().strip()
+        address_2 = self.address_2.get().strip()
         phone = self.phone.get().strip()
         email = self.email.get().strip()
 
@@ -356,12 +361,17 @@ class UserFormApp:
         # Header details
         HEADER_COMPANY_NAME = "COMPANY NAME"
         HEADER_LOGO_PATH = "logo.png"
-        HEADER_ADDRESS_LINE_1 = "1377 Maxwell Farm Road" 
-        HEADER_ADDRESS_LINE_2 = "Reno, CA 89503"
-        HEADER_PHONE = "+01-252-555-0099"
+        HEADER_ADDRESS_LINE_1 = f"Zone d’activité El Kseur"
+        HEADER_ADDRESS_LINE_2 = "06310 El Kseur Béjaia, Algérie"
+        HEADER_PHONE = "+33661161864"
         HEADER_WEBSITE = "www.yourdomain.com"
-        HEADER_EMAIL = "info@yourmail.com"
-
+        HEADER_EMAIL = "contact.floor.design@gmail.com"
+        HEADER_RC = "06/00-0191144 B 22"
+        HEADER_NIF = "00220601911446"
+        HEADER_NIS = "00 22 06 40 00 27 8 52"
+        HEADER_ARTICLE = "06400135411"
+        
+        
         # Invoice details
         INVOICE_ACCOUNT_NO = invoice_no
         INVOICE_DATE = invoice_date
@@ -369,6 +379,7 @@ class UserFormApp:
 
         BILL_TO_NAME = full_name
         BILL_TO_ADDRESS_LINE = address
+        BILL_TO_ADDRESS_LINE_2 = address_2
         BILL_TO_EMAIL = email
         BILL_TO_PHONE = phone
         BILL_TO_NIF = nif
@@ -377,7 +388,7 @@ class UserFormApp:
         BILL_TO_ARTICLE = article
         
         PAYMENT_METHOD_1 = "paypal.username@outlook.com"
-        PAYMENT_METHOD_2 = "Visa, Mastercard, Paypal"
+        PAYMENT_METHOD_2 = "Cheque   espèces   virement"
         
         # Total computation
         DISCOUNT_PERCENT = 10
@@ -401,7 +412,11 @@ class UserFormApp:
                     "addressLine2": HEADER_ADDRESS_LINE_2,
                     "phone": HEADER_PHONE,
                     "website": HEADER_WEBSITE,
-                    "email": HEADER_EMAIL
+                    "email": HEADER_EMAIL,
+                    "rc": HEADER_RC,
+                    "nif": HEADER_NIF,
+                    "nis": HEADER_NIS,
+                    "article": HEADER_ARTICLE
                 }
             },
 
@@ -414,6 +429,7 @@ class UserFormApp:
             "billTo": {
                 "name": BILL_TO_NAME,
                 "addressLine1": f"Address: {BILL_TO_ADDRESS_LINE}",
+                "addressLine2": f"Address: {BILL_TO_ADDRESS_LINE_2}",
                 "email": f"Email: {BILL_TO_EMAIL}",
                 "phone": f"Phone:{BILL_TO_PHONE}",
                 "nif": f"NIF: {BILL_TO_NIF}",
@@ -455,6 +471,7 @@ class UserFormApp:
         invoice_data['totals']['subTotal'] = calculated_sub_total
         invoice_data['totals']['discountAmount'] = (invoice_data['totals']['discountPercent'] / 100) * calculated_sub_total
         invoice_data['totals']['taxAmount'] = (invoice_data['totals']['taxPercent'] / 100) * calculated_sub_total
+        invoice_data['totals']['total_ttc'] = 145.18
         invoice_data['totals']['grandTotal'] = (
             calculated_sub_total -
             invoice_data['totals']['discountAmount'] +
