@@ -357,7 +357,7 @@ class PDFGenerator:
                             font_name=font_charter, font_size=10, color=colors.HexColor('#333333'), alignment='right')
             self._draw_text(str(item['qty']), table_start_x + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3] - (5*mm) , y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor('#333333'), alignment='right')
-            self._draw_text(f"${item['total']:.2f}", table_start_x + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3] + col_widths[4]- (8*mm) , y_single_line_cells,
+            self._draw_text(f"{item['total']}", table_start_x + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3] + col_widths[4]- (8*mm) , y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor('#333333'), alignment='right')
             
             # Draw multiline description
@@ -429,28 +429,28 @@ class PDFGenerator:
         # Sub-Total
         self._draw_text("Sous Total HT", total_label_x, current_y_right,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#717070'), alignment='left')
-        self._draw_text(f"{data['totals']['subTotal']:.2f}", total_value_x, current_y_right,
+        self._draw_text(f"{data['totals']['subTotal']}", total_value_x, current_y_right,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
         current_y_right -= (8 * mm) # Line spacing for totals
 
         # Tax
         self._draw_text(f"TVA", total_label_x, current_y_right,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#717070'), alignment='left')
-        self._draw_text(f"{data['totals']['taxAmount']:.2f}", total_value_x, current_y_right,
+        self._draw_text(f"{data['totals']['taxAmount']}", total_value_x, current_y_right,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
         current_y_right -= (8 * mm)
 
         # Total TTC
         self._draw_text(f"Total TTC", total_label_x, current_y_right,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#717070'), alignment='left')
-        self._draw_text(f"{data['totals']['total_ttc']:.2f}", total_value_x, current_y_right,
+        self._draw_text(f"{data['totals']['total_ttc']}", total_value_x, current_y_right,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
         current_y_right -= (8 * mm)
 
         # Discount
         self._draw_text(f"Acompte", total_label_x, current_y_right,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#717070'), alignment='left')
-        self._draw_text(f"{data['totals']['discountAmount']:.2f}", total_value_x, current_y_right,
+        self._draw_text(f"{data['totals']['discountAmount']}", total_value_x, current_y_right,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
         current_y_right -= (5 * mm)
 
@@ -467,7 +467,7 @@ class PDFGenerator:
         grand_total_text_y = current_y_right - (grand_total_rect_height / 2) - (0 * mm) # Vertically center in rect
         self._draw_text("A PAYER", rect_x_start + (2 * mm), grand_total_text_y,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#FFFFFF'), alignment='left')
-        self._draw_text(f"{data['totals']['grandTotal']:.2f}", total_value_x, grand_total_text_y,
+        self._draw_text(f"{data['totals']['grandTotal']}", total_value_x, grand_total_text_y,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#FFFFFF'), alignment='right')
         current_y_right -= (grand_total_rect_height + 10 * mm) # Space after grand total
 
@@ -558,12 +558,12 @@ if __name__ == "__main__":
             }
         },
         "invoiceDetails": {
-            "accountNo": "625 212 512",
+            "accountNo": "0820Z829",
             "invoiceDate": "09/02/2026",
             "issueDate": "09/08/2026"
         },
         "billTo": {
-            "name": "Richard H. Jonas",
+            "name": "SARL Client Bis",
             "accountManager": "Account manager",
             "addressLine1": "Zone d’activité El Kseur",
             "addressLine2": "06310 El Kseur Béjaia, Algérie",
@@ -576,15 +576,23 @@ if __name__ == "__main__":
         },
         "items": [
             {   
-                "model": "Square",
+                "model": "Damia",
                 "variant": "Phanes",
                 "colors": ["Gris anthracite", "Jaune indien", "Gris Etain", "Bleu kossoghol"],
-                "date": "10 Feb, 2018",
-                "description": "BI 5g + N318 1g CB\n• BLEU CANARD 5 g CB\n• Bleu Berin CB 5g", # Example of multiline description
-                "unitPrice": 2000.00,
-                "qty": 2,
-                "total": 4000.00
+                "unitPrice": 10,
+                "qty": 5,
+                "total": 50
+            },
+        
+            {   
+                "model": "Eros",
+                "variant": "Phanes",
+                "colors": ["Rouge Ercolano", "Jaune 960", "Bleu charette"],
+                "unitPrice": 12,
+                "qty": 6,
+                "total": 72
             }
+
         ],
         "paymentMethod": {
             "paypal": "paypal.username@outlook.com",
@@ -592,9 +600,9 @@ if __name__ == "__main__":
         },
         "totals": {
             "subTotal": 0, # Will be calculated dynamically
-            "discountPercent": 20,
+            "discountPercent": 10,
             "discountAmount": 0, # Will be calculated dynamically
-            "taxPercent": 25,
+            "taxPercent": 19,
             "taxAmount": 0, # Will be calculated dynamically
             "grandTotal": 0 # Will be calculated dynamically
         },
@@ -611,16 +619,18 @@ if __name__ == "__main__":
 
     # Recalculate totals based on items
     calculated_sub_total = sum(item['total'] for item in invoice_data['items'])
-    invoice_data['totals']['subTotal'] = calculated_sub_total
-    invoice_data['totals']['discountAmount'] = (invoice_data['totals']['discountPercent'] / 100) * calculated_sub_total
-    invoice_data['totals']['taxAmount'] = (invoice_data['totals']['taxPercent'] / 100) * calculated_sub_total
-    invoice_data['totals']['total_ttc'] = 145.18 # fix for now
+    invoice_data['totals']['subTotal'] = 122 #calculated_sub_total
+    invoice_data['totals']['discountAmount'] = 10 # (invoice_data['totals']['discountPercent'] / 100) * calculated_sub_total
+    invoice_data['totals']['taxAmount'] = "23,18" #(invoice_data['totals']['taxPercent'] / 100) * calculated_sub_total
+    invoice_data['totals']['total_ttc'] = "145,18" # fix for now
+    invoice_data['totals']['grandTotal'] = "135,18"
+    """ 
     invoice_data['totals']['grandTotal'] = (
         calculated_sub_total -
         invoice_data['totals']['discountAmount'] +
         invoice_data['totals']['taxAmount']
     )
-
+    """
     output_pdf_path = "replicated_invoice_canvas_final.pdf"
     pdf_gen = PDFGenerator(output_pdf_path)
     pdf_gen.create_pdf(invoice_data)
