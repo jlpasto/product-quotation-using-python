@@ -373,7 +373,7 @@ class PDFGenerator:
 
         # --- Thank You Message ---
         footer_current_y = self.bottom_margin + (20 * mm)
-        self._draw_text("Merci Pour Votre Confiance", self.left_margin, footer_current_y,
+        self._draw_text("M e r c i  P o u r  V o t r e  C o n f i a n c e", self.left_margin, footer_current_y,
                         font_name='Charter-Bold', font_size=13, color=colors.HexColor('#C9B7A1'))
 
         footer_current_y -= 8 * mm
