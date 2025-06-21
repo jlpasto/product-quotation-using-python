@@ -232,7 +232,7 @@ class PDFGenerator:
         self.current_y = min(current_y_bill_to, current_y_invoice_details) - (18 * mm)
 
 
-    def _draw_items_table(self, items_data):
+    def _draw_items_table(self, items_data, regex = False):
         """Draws the items table with product details and totals."""
         headers = ["NOM MODELE", "COULEURS", "PRIX UNITAIRE", "QUANTINTE", "TOTAL HT"]
         col_widths = [35 * mm, 36 * mm, 35 * mm, 35 * mm, 35 * mm]
@@ -247,7 +247,11 @@ class PDFGenerator:
         self.c.setStrokeColor(colors.HexColor('#5E5E5E'))
         self.c.rect(table_start_x, table_start_y, self.page_width - (40 * mm), 0.3 * mm, fill=1)
         self.c.rect(table_start_x, table_start_y - header_height, self.page_width - (40 * mm), 0.3 * mm, fill=1)
-
+        color = ""
+        if regex:
+            color = "#FFFFFF"
+        else:
+            color = "#333333"
         # Draw header text
         current_x_header = table_start_x
         for i, header in enumerate(headers):
@@ -277,13 +281,13 @@ class PDFGenerator:
 
             # Draw individual cell data
             self._draw_text(item['model'], table_start_x, y_single_line_cells,
-                            font_name=font_charter, font_size=10, color=colors.HexColor('#333333'))
+                            font_name=font_charter, font_size=10, color=colors.HexColor(color))
             self._draw_text(f"{float(item['unitPrice']):.2f}".replace('.', ','), table_start_x + sum(col_widths[:3]) - (5 * mm), y_single_line_cells,
-                            font_name=font_charter, font_size=10, color=colors.HexColor('#333333'), alignment='right')
+                            font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
             self._draw_text(str(item['qty']), table_start_x + sum(col_widths[:4]) - (5 * mm), y_single_line_cells,
-                            font_name=font_charter, font_size=10, color=colors.HexColor('#333333'), alignment='right')
+                            font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
             self._draw_text(f"{float(item['total']):.2f}".replace('.', ','), table_start_x + sum(col_widths) - (8 * mm), y_single_line_cells,
-                            font_name=font_charter, font_size=10, color=colors.HexColor('#333333'), alignment='right')
+                            font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
 
             # Draw color lines with bullets
             desc_y_start = self.current_y - (5.6 * mm)
@@ -292,9 +296,9 @@ class PDFGenerator:
                 line_x_pos = table_start_x + col_widths[0]
                 if text_to_draw:
                     self._draw_text("\u2022", line_x_pos, desc_y_start - (j * self.DEFAULT_LINE_HEIGHT_MM),
-                                    font_name=font_charter, font_size=10, color=colors.HexColor('#333333'))
+                                    font_name=font_charter, font_size=10, color=colors.HexColor(color))
                     self._draw_text(text_to_draw, line_x_pos + (4 * mm), desc_y_start - (j * self.DEFAULT_LINE_HEIGHT_MM),
-                                    font_name=font_charter, font_size=10, color=colors.HexColor('#333333'))
+                                    font_name=font_charter, font_size=10, color=colors.HexColor(color))
             self.current_y -= calculated_row_height
 
         # Space after table
@@ -403,7 +407,7 @@ class PDFGenerator:
         self.c = canvas.Canvas(self.file_path, pagesize=A4)
         self._draw_header(data)
         self._draw_bill_to_and_invoice_details(data)
-        self._draw_items_table(data['items'])
+        self._draw_items_table(data['items'], True)
         self._draw_totals_and_payment_method(data)
         self._draw_footer(data)
         self.c.save()
