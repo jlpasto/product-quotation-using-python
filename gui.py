@@ -295,7 +295,7 @@ class UserFormApp:
         return invoice_number
 
     def get_invoice_current_date(self):
-        return datetime.now().strftime("%m/%d/%Y")
+        return datetime.now().strftime("%d/%m/%Y")
 
     
     def get_invoice_issue_date(self, months=3):
@@ -387,8 +387,7 @@ class UserFormApp:
         BILL_TO_RC = rc
         BILL_TO_ARTICLE = article
         
-        PAYMENT_METHOD_1 = "paypal.username@outlook.com"
-        PAYMENT_METHOD_2 = "Cheque   espèces   virement"
+        PAYMENT_METHOD_1 = "Cheque   espèces   virement"
         
         # Total computation
         DISCOUNT_PERCENT = 10
@@ -399,8 +398,9 @@ class UserFormApp:
         TY_MSG_NOTES_LINE_1 = "• Above magna aliquarn erat volulpat ad minim veniam, quis nostrud"
         TY_MSG_NOTES_LINE_2 = "• Exercitation ullamco laboris nisi ut aliquip ex ea commodo"
 
-        SIGNATURE_NAME = "Anne-Kahina Yessad"
-        SIGNATURE_TITLE =  "Manager"
+        SIGNATURE_NAME = "A.K. YESSAD"
+        SIGNATURE_FULLNAME = "Anne-Kahina YESSAD"
+        SIGNATURE_TITLE =  "Directrice générale"
         SIGNATURE_SIGN_IMG = ""
 
         invoice_data = {
@@ -441,8 +441,8 @@ class UserFormApp:
             "items": entries,
 
             "paymentMethod": {
-                "paymentMethod1": PAYMENT_METHOD_1,
-                "paymentMethod2": PAYMENT_METHOD_2
+                "paymentMethod1": PAYMENT_METHOD_1
+                
             },
 
             "totals": {
@@ -462,6 +462,7 @@ class UserFormApp:
 
             "signature": {
                 "name": SIGNATURE_NAME,
+                "fullName": SIGNATURE_FULLNAME,
                 "title": SIGNATURE_TITLE
             }
         }
