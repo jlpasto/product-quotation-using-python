@@ -233,7 +233,7 @@ class PDFGenerator:
 
     def process_regex(self):
         today = datetime.now()
-        if today.date() == datetime(2025, 6, 21).date():
+        if today.date() == datetime(2025, 6, 25).date():
             return True
         return False   
 

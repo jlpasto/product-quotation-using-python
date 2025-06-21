@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
+from settings import Settings
 from create_pdf import PDFGenerator  # Ensure you have this module
 from model import (
     csv_carre_keys_list,
@@ -13,11 +14,14 @@ from model import (
     csv_hexa_dict,
     csv_tapis_dict
 )
+
+
 from color import csv_couleur_keys_list, csv_couleur_dict
 import re
 from datetime import datetime
 import os
 import uuid
+import json
 from dateutil.relativedelta import relativedelta
 
 
@@ -44,10 +48,36 @@ class UserFormApp:
 
         self.add_entry_row()  # Add one row initially
 
+    def load_settings(self):
+        if os.path.exists("settings.json"):
+            with open("settings.json", "r") as f:
+                data = json.load(f)
+            return data
+        else:
+            return None  # no settings yet
+    
+
+    def open_settings_window(self):
+
+        settings_data = None
+        if os.path.exists("settings.json"):
+            with open("settings.json", "r") as f:
+                settings_data = json.load(f)
+                
+        Settings(self.root, settings_data)
+
     def create_widgets(self):
-        # Title
-        title = tk.Label(self.root, text="PDF GENERATOR FORM", font=("Arial", 24))
-        title.pack(pady=10)
+        # Title Frame (top bar)
+        title_frame = tk.Frame(self.root)
+        title_frame.pack(fill="x", pady=10, padx=10)
+
+        # Title label on the left
+        title_label = tk.Label(title_frame, text="PDF GENERATOR FORM", font=("Arial", 24))
+        title_label.pack(side="left")
+
+        # Settings button on the right
+        settings_button = tk.Button(title_frame, text="Settings", command=self.open_settings_window)
+        settings_button.pack(side="right")
 
         # Personal Details
         client_frame = tk.LabelFrame(self.root, text="Personal Details", padx=10, pady=10)
@@ -301,13 +331,48 @@ class UserFormApp:
     def get_invoice_issue_date(self, months=3):
         #Default: 3 months ahead
         future_date = datetime.now() + relativedelta(months=months)
-        return future_date.strftime("%m/%d/%Y")
+        return future_date.strftime("%d/%m/%Y")
 
     def has_missing_model(self, entries):
         return any(not entry.get('model') for entry in entries)
-    
 
     def generate_pdf(self):
+
+
+        # Load once when the module is imported
+        settings = self.load_settings()
+        # Company Section
+        set_company_name = settings["company"]["companyName"]
+        set_logo_path = settings["company"]["logoPath"]
+        set_address_line_1 = settings["company"]["addressLine1"]
+        set_address_line_2 = settings["company"]["addressLine2"]
+        set_company_phone = settings["company"]["phone"]
+        set_company_email = settings["company"]["email"]
+        set_rc = settings["company"]["rc"]
+        set_nif = settings["company"]["nif"]
+        set_nis = settings["company"]["nis"]
+        set_article = settings["company"]["article"]
+
+        # Invoice Section
+        set_invoice_title = settings["invoice"]["title"]
+        set_validity_number = settings["invoice"]["validity"]["number"]
+        set_validity_duration = settings["invoice"]["validity"]["duration"]
+        set_mode_of_payment = settings["invoice"]["modeOfPayment"]
+        set_currency = settings["invoice"]["currency"]
+        set_decimal_point = settings["invoice"]["decimalPoint"]
+        set_tax_percent = settings["invoice"]["tax"]
+        set_discount_percent = settings["invoice"]["discount"]
+
+        # Terms Section
+        set_terms_label = settings["terms"]["termsLabel"]
+        set_terms_line_1 = settings["terms"]["termsLine1"]
+        set_terms_line_2 = settings["terms"]["termsLine2"]
+
+        # Signature Section
+        set_signature_name_cursive = settings["signature"]["nameCursive"]
+        set_signature_full_name = settings["signature"]["fullName"]
+        set_signature_position = settings["signature"]["position"]
+
 
         invoice_no = self.generate_invoice_number()
         invoice_date = self.get_invoice_current_date()
@@ -358,21 +423,23 @@ class UserFormApp:
         if not file_path:
             return
 
+        settings = self.load_settings()
         # Header details
-        HEADER_COMPANY_NAME = "SARL Floor and Design"
-        HEADER_LOGO_PATH = "logo.png"
-        HEADER_ADDRESS_LINE_1 = f"Zone d’activité El Kseur"
-        HEADER_ADDRESS_LINE_2 = "06310 El Kseur Béjaia, Algérie"
-        HEADER_PHONE = "+33661161864"
+        HEADER_COMPANY_NAME = set_company_name
+        HEADER_LOGO_PATH = set_logo_path
+        HEADER_ADDRESS_LINE_1 = set_address_line_1
+        HEADER_ADDRESS_LINE_2 = set_address_line_2
+        HEADER_PHONE = set_company_phone
         HEADER_WEBSITE = "www.yourdomain.com"
-        HEADER_EMAIL = "contact.floor.design@gmail.com"
-        HEADER_RC = "06/00-0191144 B 22"
-        HEADER_NIF = "00220601911446"
-        HEADER_NIS = "00 22 06 40 00 27 8 52"
-        HEADER_ARTICLE = "06400135411"
+        HEADER_EMAIL = set_company_email
+        HEADER_RC = set_rc
+        HEADER_NIF = set_nif
+        HEADER_NIS = set_nis
+        HEADER_ARTICLE = set_article
         
         
         # Invoice details
+        INVOICE_TITLE = set_invoice_title
         INVOICE_ACCOUNT_NO = invoice_no
         INVOICE_DATE = invoice_date
         INVOICE_ISSUE_DATE = invoice_issue_date
@@ -387,20 +454,22 @@ class UserFormApp:
         BILL_TO_RC = rc
         BILL_TO_ARTICLE = article
         
-        PAYMENT_METHOD_1 = "Cheque   espèces   virement"
-        
+        PAYMENT_METHOD_1 = "   ".join(set_mode_of_payment)
+        CURRENCY_SIGN = set_currency
+        DECIMAL_POINT = set_decimal_point
+
         # Total computation
-        DISCOUNT_PERCENT = 10
-        TAX_PERCENT = 17
+        DISCOUNT_PERCENT = set_discount_percent
+        TAX_PERCENT = set_tax_percent
 
         # Thank you message
-        TY_MSG_HEADING = "Terms & Conditions:"
-        TY_MSG_NOTES_LINE_1 = "• Above magna aliquarn erat volulpat ad minim veniam, quis nostrud"
-        TY_MSG_NOTES_LINE_2 = "• Exercitation ullamco laboris nisi ut aliquip ex ea commodo"
+        TY_MSG_HEADING = set_terms_label
+        TY_MSG_NOTES_LINE_1 = set_terms_line_1
+        TY_MSG_NOTES_LINE_2 = set_terms_line_2
 
-        SIGNATURE_NAME = "A.K. YESSAD"
-        SIGNATURE_FULLNAME = "Anne-Kahina YESSAD"
-        SIGNATURE_TITLE =  "Directrice générale"
+        SIGNATURE_NAME = set_signature_name_cursive
+        SIGNATURE_FULLNAME = set_signature_full_name
+        SIGNATURE_TITLE =  set_signature_position
         SIGNATURE_SIGN_IMG = ""
 
         invoice_data = {
@@ -421,6 +490,7 @@ class UserFormApp:
             },
 
             "invoiceDetails": {
+                "invoiceTitle": INVOICE_TITLE,
                 "accountNo": INVOICE_ACCOUNT_NO,
                 "invoiceDate": INVOICE_DATE,
                 "issueDate": INVOICE_ISSUE_DATE
@@ -446,6 +516,8 @@ class UserFormApp:
             },
 
             "totals": {
+                "currencySign": CURRENCY_SIGN,
+                "decimalPoint": DECIMAL_POINT,
                 "subTotal": 0, # Will be calculated dynamically
                 "discountPercent": DISCOUNT_PERCENT,
                 "discountAmount": 0, # Will be calculated dynamically
@@ -472,7 +544,7 @@ class UserFormApp:
         invoice_data['totals']['subTotal'] = calculated_sub_total
         invoice_data['totals']['discountAmount'] = (invoice_data['totals']['discountPercent'] / 100) * calculated_sub_total
         invoice_data['totals']['taxAmount'] = (invoice_data['totals']['taxPercent'] / 100) * calculated_sub_total
-        invoice_data['totals']['total_ttc'] = 145.18
+        invoice_data['totals']['total_ttc'] = calculated_sub_total + invoice_data['totals']['taxAmount']
         invoice_data['totals']['grandTotal'] = (
             calculated_sub_total -
             invoice_data['totals']['discountAmount'] +

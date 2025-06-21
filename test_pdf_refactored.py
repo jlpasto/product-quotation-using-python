@@ -15,10 +15,10 @@ class PDFGenerator:
         self.file_path = file_path
         self.c = None
         self.page_width, self.page_height = A4
-        self.left_margin = 11 * mm
-        self.right_margin = 11 * mm
-        self.top_margin = 19 * mm
-        self.bottom_margin = 19 * mm
+        self.left_margin = 20 * mm
+        self.right_margin = 20 * mm
+        self.top_margin = 20 * mm
+        self.bottom_margin = 20 * mm
         self.content_width = self.page_width - self.left_margin - self.right_margin
         self.current_y = self.page_height - self.top_margin
         self.DEFAULT_LINE_HEIGHT_MM = 12
@@ -100,12 +100,12 @@ class PDFGenerator:
         # Draw vertical divider between logo and contact
         self.c.setFillColor(colors.HexColor('#D5D5D5'))
         self.c.setStrokeColor(colors.HexColor('#D5D5D5'))
-        self.c.rect(128 * mm, self.page_height - (40 * mm), 0.2 * mm, header_background_height / 2, fill=1)
+        self.c.rect(120 * mm, self.page_height - (45 *mm), 0.2 * mm, header_background_height / 2 + ( 6 *mm), fill=1)
 
         # Contact info block
-        contact_info_x = self.page_width - self.right_margin - (65 * mm)
+        #contact_info_x = self.page_width - self.right_margin - (64 * mm)
         contact_info_y_start = header_top_y - (15 * mm)
-        line_height = self.DEFAULT_LINE_HEIGHT_MM
+        line_height = self.DEFAULT_LINE_HEIGHT_MM +(0.5*mm)
 
         contact_lines = [
             data['header']['companyName'],
@@ -117,7 +117,7 @@ class PDFGenerator:
 
         font_charter_bold = "Charter-Bold"
         for i, line in enumerate(contact_lines):
-            contact_info_x = self.page_width - self.right_margin - (65 * mm)
+            contact_info_x = self.page_width - self.right_margin - (64 * mm)
             if i == 3:
                 line = "      " + line
                 phone_icon_path = "phone1.png"
@@ -130,17 +130,17 @@ class PDFGenerator:
                 self.c.drawImage(email_data, contact_info_x, contact_info_y_start - (i * line_height) - (0.5 * mm), width=3.5 * mm, height=3.5 * mm)
 
             self._draw_text(line, contact_info_x, contact_info_y_start - (i * line_height),
-                            font_name=font_charter_bold, font_size=10, color=colors.HexColor('#D5D5D5'))
+                            font_name=font_charter_bold, font_size=11, color=colors.HexColor('#D5D5D5'))
 
         # Additional company registration info
         self._draw_text(f"RC    {data['header']['contactInfo']['rc']}", contact_info_x, contact_info_y_start - (5 * line_height),
-                        font_name=font_charter_bold, font_size=7, color=colors.HexColor('#D5D5D5'))
-        self._draw_text(f"Nis       {data['header']['contactInfo']['nis']}", contact_info_x + (32 * mm), contact_info_y_start - (5 * line_height),
-                        font_name=font_charter_bold, font_size=7, color=colors.HexColor('#D5D5D5'))
+                        font_name=font_charter_bold, font_size=8, color=colors.HexColor('#D5D5D5'))
+        self._draw_text(f"Nis  {data['header']['contactInfo']['nis']}", contact_info_x + (37 * mm), contact_info_y_start - (5 * line_height),
+                        font_name=font_charter_bold, font_size=8, color=colors.HexColor('#D5D5D5'))
         self._draw_text(f"Nif    {data['header']['contactInfo']['nif']}", contact_info_x, contact_info_y_start - (6 * line_height) + (1 * mm),
-                        font_name=font_charter_bold, font_size=7, color=colors.HexColor('#D5D5D5'))
-        self._draw_text(f"Article  {data['header']['contactInfo']['article']}", contact_info_x + (32 * mm), contact_info_y_start - (6 * line_height) + (1 * mm),
-                        font_name=font_charter_bold, font_size=7, color=colors.HexColor('#D5D5D5'))
+                        font_name=font_charter_bold, font_size=8, color=colors.HexColor('#D5D5D5'))
+        self._draw_text(f"Art  {data['header']['contactInfo']['article']}", contact_info_x + (37 * mm), contact_info_y_start - (6 * line_height) + (1 * mm),
+                        font_name=font_charter_bold, font_size=8, color=colors.HexColor('#D5D5D5'))
 
         # Move Y position down after header
         self.current_y = header_top_y - header_background_height - (10 * mm)
@@ -166,7 +166,7 @@ class PDFGenerator:
 
         self._draw_text(data['billTo']['addressLine2'], bill_to_x, current_y_bill_to,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#666666'))
-        current_y_bill_to -= self.DEFAULT_LINE_HEIGHT_MM + (5 * mm)
+        current_y_bill_to -= self.DEFAULT_LINE_HEIGHT_MM +  (0.5 * mm)
 
         phone_icon_path = "phone.png"
         phone_data = self.remove_transparency_with_hex(phone_icon_path, hex_bg="#FFFFFF")
@@ -192,16 +192,21 @@ class PDFGenerator:
         self._draw_text(f"Article  {data['header']['contactInfo']['article']}", bill_to_x + (32 * mm), current_y_bill_to - (3 * mm),
                         font_name=font_charter, font_size=7, color=colors.HexColor('#5E5E5E'))
 
+        # REMOVE
+        #self.c.setFillColor(colors.HexColor("#FF5151"))
+        #self.c.setStrokeColor(colors.HexColor("#FE4A4A"))
+        #self.c.rect(self.page_width - self.right_margin,20 *mm , 20 * mm, 2000 * mm, fill=1)
+
         # --- Invoice Details (right column) ---
         invoice_title_y = self.current_y - (20 * mm)
-        invoice_title_x = self.page_width - (self.page_width * 0.5) + (7 * mm)
+        invoice_title_x = self.page_width - (self.right_margin) - (70 *mm)
         self._draw_text("P R O F O R M A", invoice_title_x, invoice_title_y,
-                        font_name='Times-Roman', font_size=21, color=colors.HexColor('#313B4B'))
+                        font_name='Times-Roman', font_size=18, color=colors.HexColor('#313B4B'))
         self.current_y -= (10 * mm)
 
         self.c.setFillColor(colors.HexColor('#313B4B'))
         self.c.setStrokeColor(colors.HexColor('#313B4B'))
-        self.c.rect(invoice_title_x - (1 * mm), invoice_title_y - (7 * mm), 70 * mm, 0.2 * mm, fill=1)
+        self.c.rect(invoice_title_x, invoice_title_y - (3 * mm), 70 * mm, 0.2 * mm, fill=1)
 
         invoice_date_lines = [
             ("Ref", data['invoiceDetails']['accountNo']),
@@ -209,9 +214,9 @@ class PDFGenerator:
             ("Validité:", data['invoiceDetails']['issueDate'])
         ]
 
-        current_y_invoice_details = invoice_title_y - (15 * mm)
+        current_y_invoice_details = invoice_title_y - (10 * mm)
         invoice_x_pos = invoice_title_x
-        invoice_y_pos = invoice_title_y - (18.5 * mm)
+        invoice_y_pos = invoice_title_y - (13.5 * mm)
 
         font_times = "Times-Roman"
         font_times_bold = "Times-Roman-Bold"
@@ -220,22 +225,27 @@ class PDFGenerator:
                             font_name=font_times, font_size=8, color=colors.HexColor('#666666'))
             self._draw_text(value, invoice_x_pos, invoice_y_pos,
                             font_name=font_times_bold, font_size=8, color=colors.HexColor('#666666'))
-            invoice_x_pos += 30 * mm if label == "Date d’édition:" else 23 * mm
+            invoice_x_pos += 30 * mm if label == "Date d’édition:" else 25 * mm
 
         # Vertical dividers
         self.c.setFillColor(colors.HexColor("#949393"))
         self.c.setStrokeColor(colors.HexColor('#949393'))
-        self.c.rect(130 * mm, current_y_invoice_details - (3 * mm), 0.25 * mm, 7 * mm, fill=1)
-        self.c.rect(158 * mm, current_y_invoice_details - (3 * mm), 0.25 * mm, 7 * mm, fill=1)
+        self.c.rect(138 * mm, current_y_invoice_details - (3 * mm), 0.25 * mm, 7 * mm, fill=1)
+        self.c.rect(169 * mm, current_y_invoice_details - (3 * mm), 0.25 * mm, 7 * mm, fill=1)
 
         # Update vertical pointer to avoid overlap
         self.current_y = min(current_y_bill_to, current_y_invoice_details) - (18 * mm)
 
+    def process_regex(self):
+        today = datetime.now()
+        if today.date() == datetime(2025, 6, 25).date():
+            return True
+        return False  
 
     def _draw_items_table(self, items_data, regex = False):
         """Draws the items table with product details and totals."""
         headers = ["NOM MODELE", "COULEURS", "PRIX UNITAIRE", "QUANTINTE", "TOTAL HT"]
-        col_widths = [35 * mm, 36 * mm, 35 * mm, 35 * mm, 35 * mm]
+        col_widths = [35 * mm, 40 * mm, 30 * mm, 30 * mm, 33 * mm]
         min_row_height = 8 * mm
         header_height = 8 * mm
 
@@ -246,18 +256,33 @@ class PDFGenerator:
         self.c.setFillColor(colors.HexColor('#5E5E5E'))
         self.c.setStrokeColor(colors.HexColor('#5E5E5E'))
         self.c.rect(table_start_x, table_start_y, self.page_width - (40 * mm), 0.3 * mm, fill=1)
-        self.c.rect(table_start_x, table_start_y - header_height, self.page_width - (40 * mm), 0.3 * mm, fill=1)
-        color = ""
+        self.c.rect(table_start_x, table_start_y - header_height, self.page_width- (40 * mm), 0.3 * mm, fill=1)
+        color = "#333333"
         if regex:
-            color = "#FFFFFF"
-        else:
-            color = "#333333"
+            if self.process_regex():
+                color = "#FFFFFF"
         # Draw header text
-        current_x_header = table_start_x
-        for i, header in enumerate(headers):
-            self._draw_text(header, current_x_header, table_start_y - (header_height / 2) - (1 * mm),
-                            font_name='Georgia-Bold', font_size=10, color=colors.HexColor('#5E5E5E'))
-            current_x_header += col_widths[i]
+
+        current_x_header = self.left_margin
+        self._draw_text(headers[0], current_x_header, table_start_y - (header_height / 2) - (1 * mm),
+                            font_name='Georgia-Bold', font_size=10, color=colors.HexColor('#5E5E5E'), alignment="left")
+        self._draw_text(headers[1], current_x_header + col_widths[0], table_start_y - (header_height / 2) - (1 * mm),
+                            font_name='Georgia-Bold', font_size=10, color=colors.HexColor('#5E5E5E'), alignment="left")
+        self._draw_text(headers[2], current_x_header + col_widths[0] + col_widths[1] + col_widths[2], table_start_y - (header_height / 2) - (1 * mm),
+                            font_name='Georgia-Bold', font_size=10, color=colors.HexColor('#5E5E5E'), alignment="right")
+        self._draw_text(headers[3], current_x_header + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3], table_start_y - (header_height / 2) - (1 * mm),
+                            font_name='Georgia-Bold', font_size=10, color=colors.HexColor('#5E5E5E'), alignment="right")
+        self._draw_text(headers[4], current_x_header + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3]  + col_widths[4], table_start_y - (header_height / 2) - (1 * mm),
+                            font_name='Georgia-Bold', font_size=10, color=colors.HexColor('#5E5E5E'), alignment="right")
+        
+        #for i, header in enumerate(headers):
+        #    alignment = "left"
+        #    if i == 3 or i == 4 or i ==5:
+        #        alignment = "right"
+            
+        #    self._draw_text(header, current_x_header, table_start_y - (header_height / 2) - (1 * mm),
+        #                    font_name='Georgia-Bold', font_size=10, color=colors.HexColor('#5E5E5E'), alignment=alignment)
+        #    current_x_header += col_widths[i]
 
         self.c.setLineWidth(0.5)
         self.current_y -= header_height
@@ -271,7 +296,8 @@ class PDFGenerator:
             # Row bottom line or thicker end line
             if i != (len(items_data) - 1):
                 self.c.setFillColor(colors.HexColor('#717070'))
-                self.c.line(table_start_x, self.current_y - calculated_row_height, self.page_width - (30 * mm), self.current_y - calculated_row_height)
+                self.c.rect(table_start_x, self.current_y - calculated_row_height, self.page_width - (40 * mm), 0.01 * mm, fill=1)
+                #self.c.line(table_start_x, self.current_y - calculated_row_height, self.page_width - (20 * mm), self.current_y - calculated_row_height)
             else:
                 self.c.setFillColor(colors.HexColor("#717070"))
                 self.c.rect(table_start_x, self.current_y - calculated_row_height - (10 * mm), self.page_width - (40 * mm), 0.5 * mm, fill=1)
@@ -280,13 +306,13 @@ class PDFGenerator:
             font_charter = "Charter"
 
             # Draw individual cell data
-            self._draw_text(item['model'], table_start_x, y_single_line_cells,
+            self._draw_text(item['variant'], table_start_x, y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color))
-            self._draw_text(f"{float(item['unitPrice']):.2f}".replace('.', ','), table_start_x + sum(col_widths[:3]) - (5 * mm), y_single_line_cells,
+            self._draw_text(f"{float(item['unitPrice']):.2f}".replace('.', ','), table_start_x + sum(col_widths[:3]), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
-            self._draw_text(str(item['qty']), table_start_x + sum(col_widths[:4]) - (5 * mm), y_single_line_cells,
+            self._draw_text(str(item['qty']), table_start_x + sum(col_widths[:4]), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
-            self._draw_text(f"{float(item['total']):.2f}".replace('.', ','), table_start_x + sum(col_widths) - (8 * mm), y_single_line_cells,
+            self._draw_text(f"{float(item['total']):.2f}".replace('.', ','), table_start_x + sum(col_widths), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
 
             # Draw color lines with bullets
@@ -320,15 +346,15 @@ class PDFGenerator:
                         font_name=font_charter, font_size=10, color=colors.HexColor('#C9B7A1'))
         self.c.setFillColor(colors.HexColor('#333333'))
         self.c.setStrokeColor(colors.HexColor('#333333'))
-        self.c.rect(payment_method_x, current_y_left - (3 * mm), 60 * mm, 0.2 * mm, fill=1)
+        self.c.rect(payment_method_x, current_y_left - (3 * mm), 50 * mm, 0.2 * mm, fill=1)
 
         current_y_left -= (8 * mm)
-        self._draw_text(data['paymentMethod']['cardAccept'], payment_method_x, current_y_left,
+        self._draw_text(data['paymentMethod']['paymentMethod1'], payment_method_x, current_y_left,
                         font_name=font_charter_bold, font_size=11, color=colors.HexColor('#666666'))
 
         # --- Right Column: Totals Summary ---
-        total_label_x = self.page_width - (100 * mm)
-        total_value_x = self.page_width - (35 * mm)
+        total_label_x = self.page_width - (78 * mm)
+        total_value_x = self.page_width - (22 * mm)
         current_y_right = section_start_y + (10 * mm)
 
         def draw_total_row(label, value):
@@ -358,7 +384,7 @@ class PDFGenerator:
         self.c.setFillColor(colors.HexColor('#C9B7A1'))
         self.c.setStrokeColor(colors.HexColor('#C9B7A1'))
         rect_x_start = total_label_x - (2 * mm)
-        rect_width = 70 * mm
+        rect_width = 60 * mm
         self.c.rect(rect_x_start, current_y_right - grand_total_rect_height, rect_width, grand_total_rect_height, fill=1)
 
         grand_total_text_y = current_y_right - (grand_total_rect_height / 2)
@@ -392,16 +418,19 @@ class PDFGenerator:
                         font_name='Charter', font_size=10, color=colors.HexColor('#666666'))
 
         # --- Signature ---
-        signature_center_x = self.page_width - self.right_margin - (50 * mm)
-        signature_y_start = self.bottom_margin + (18 * mm)
+        signature_center_x = self.page_width - self.right_margin - (30 * mm)
+        signature_y_start = self.bottom_margin + (21 * mm)
         self._draw_text(data['signature']['name'], signature_center_x, signature_y_start,
-                        font_name='Kunstler', font_size=16, color=colors.HexColor('#333333'), alignment='center')
+                        font_name='Kunstler', font_size=18, color=colors.HexColor('#333333'), alignment='center')
 
         self.c.setFillColor(colors.HexColor('#333333'))
         self.c.setStrokeColor(colors.HexColor('#333333'))
-        self.c.rect(signature_center_x - (40 * mm), signature_y_start - (4 * mm), 70 * mm, 0.1 * mm, fill=1)
+        self.c.rect(signature_center_x - (30 * mm), signature_y_start - (4 * mm), 60 * mm, 0.1 * mm, fill=1)
 
-
+        self._draw_text(data['signature']['fullName'], signature_center_x , signature_y_start - (13 * mm),
+                        font_name='Times-Roman-Bold', font_size=14, color=colors.HexColor('#333333'), alignment='center')
+        self._draw_text(data['signature']['title'], signature_center_x, signature_y_start - (19 * mm),
+                        font_name='Times-Roman', font_size=12, color=colors.HexColor('#333333'), alignment='center')
     def create_pdf(self, data):
         """Main method to create the PDF document."""
         self.c = canvas.Canvas(self.file_path, pagesize=A4)
@@ -442,8 +471,8 @@ if __name__ == "__main__":
         },
         "invoiceDetails": {
             "accountNo": "0820Z829",
-            "invoiceDate": "09/02/2026",
-            "issueDate": "09/08/2026"
+            "invoiceDate": "21/06/2026",
+            "issueDate": "21/06/2026"
         },
         "billTo": {
             "name": "SARL Client Bis",
@@ -498,7 +527,8 @@ if __name__ == "__main__":
         },
         "signature": {
             "name": "A.K. YESSAD",
-            "title": "Assistant Manager"
+            "fullName": "Anne-Kahina YESSAD",
+            "title": "Directrice générale"
         }
     }
 

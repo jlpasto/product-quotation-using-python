@@ -1,0 +1,39 @@
+{
+    "company": {
+        "companyName": "SARL Floor and Designss",
+        "logoPath": "images\\logo.png",
+        "addressLine1": "Zone d\u2019activit\u00e9 El Kseur",
+        "addressLine2": "06310 El Kseur B\u00e9jaia, Alg\u00e9rie",
+        "phone": "+33661161864",
+        "email": "contact.floor.design@gmail.com",
+        "rc": "06/00-0191144 B 22",
+        "nif": "00220601911446",
+        "nis": "00 22 06 40 00 27 8 52",
+        "article": "06400135411"
+    },
+    "invoice": {
+        "title": "Proforma",
+        "validity": {
+            "number": 3,
+            "duration": "month"
+        },
+        "modeOfPayment": [
+            "cheque",
+            "esp\u00e8ces"
+        ],
+        "currency": "\u20ac",
+        "decimalPoint": ",",
+        "tax": 17.0,
+        "discount": 10.0
+    },
+    "terms": {
+        "termsLabel": "Terms & Conditions:",
+        "termsLine1": "\u2022 Above magna aliquarn erat volulpat ad minim veniam, quis nostrud",
+        "termsLine2": "\u2022 Exercitation ullamco laboris nisi ut aliquip ex ea commodo"
+    },
+    "signature": {
+        "nameCursive": "A.K. YESSAD",
+        "fullName": "Anne-Kahina YESSAD",
+        "position": "Directrice g\u00e9n\u00e9rale"
+    }
+}

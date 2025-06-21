@@ -135,11 +135,11 @@ class PDFGenerator:
         # Additional company registration info
         self._draw_text(f"RC    {data['header']['contactInfo']['rc']}", contact_info_x, contact_info_y_start - (5 * line_height),
                         font_name=font_charter_bold, font_size=8, color=colors.HexColor('#D5D5D5'))
-        self._draw_text(f"Nis       {data['header']['contactInfo']['nis']}", contact_info_x + (32 * mm), contact_info_y_start - (5 * line_height),
+        self._draw_text(f"Nis  {data['header']['contactInfo']['nis']}", contact_info_x + (37 * mm), contact_info_y_start - (5 * line_height),
                         font_name=font_charter_bold, font_size=8, color=colors.HexColor('#D5D5D5'))
         self._draw_text(f"Nif    {data['header']['contactInfo']['nif']}", contact_info_x, contact_info_y_start - (6 * line_height) + (1 * mm),
                         font_name=font_charter_bold, font_size=8, color=colors.HexColor('#D5D5D5'))
-        self._draw_text(f"Art  {data['header']['contactInfo']['article']}", contact_info_x + (32 * mm), contact_info_y_start - (6 * line_height) + (1 * mm),
+        self._draw_text(f"Art  {data['header']['contactInfo']['article']}", contact_info_x + (37 * mm), contact_info_y_start - (6 * line_height) + (1 * mm),
                         font_name=font_charter_bold, font_size=8, color=colors.HexColor('#D5D5D5'))
 
         # Move Y position down after header
@@ -200,7 +200,10 @@ class PDFGenerator:
         # --- Invoice Details (right column) ---
         invoice_title_y = self.current_y - (20 * mm)
         invoice_title_x = self.page_width - (self.right_margin) - (70 *mm)
-        self._draw_text("P R O F O R M A", invoice_title_x, invoice_title_y,
+
+        #P R O F O R M A
+        inv_title = " ".join(data['invoiceDetails']['invoiceTitle'].upper())
+        self._draw_text(inv_title, invoice_title_x, invoice_title_y,
                         font_name='Times-Roman', font_size=18, color=colors.HexColor('#313B4B'))
         self.current_y -= (10 * mm)
 
@@ -242,7 +245,7 @@ class PDFGenerator:
             return True
         return False  
 
-    def _draw_items_table(self, items_data, regex = False):
+    def _draw_items_table(self, items_data, decimal_point = ",", regex = False):
         """Draws the items table with product details and totals."""
         headers = ["NOM MODELE", "COULEURS", "PRIX UNITAIRE", "QUANTINTE", "TOTAL HT"]
         col_widths = [35 * mm, 40 * mm, 30 * mm, 30 * mm, 33 * mm]
@@ -306,13 +309,14 @@ class PDFGenerator:
             font_charter = "Charter"
 
             # Draw individual cell data
+           
             self._draw_text(item['variant'], table_start_x, y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color))
-            self._draw_text(f"{float(item['unitPrice']):.2f}".replace('.', ','), table_start_x + sum(col_widths[:3]), y_single_line_cells,
+            self._draw_text(f"{float(item['unitPrice']):.2f}".replace('.', decimal_point), table_start_x + sum(col_widths[:3]), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
             self._draw_text(str(item['qty']), table_start_x + sum(col_widths[:4]), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
-            self._draw_text(f"{float(item['total']):.2f}".replace('.', ','), table_start_x + sum(col_widths), y_single_line_cells,
+            self._draw_text(f"{float(item['total']):.2f}".replace('.', decimal_point), table_start_x + sum(col_widths), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
 
             # Draw color lines with bullets
@@ -365,17 +369,19 @@ class PDFGenerator:
                             font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
             current_y_right -= (8 * mm)
 
-        formatted_subtotal = f"{float(data['totals']['subTotal']):.2f}".replace('.', ',')
-        formatted_tax = f"{float(data['totals']['taxAmount']):.2f}".replace('.', ',')
-        formatted_total_ttc = f"{float(data['totals']['total_ttc']):.2f}".replace('.', ',')
+        decimal_point = data['totals']['decimalPoint']
+        formatted_subtotal = f"{float(data['totals']['subTotal']):.2f}".replace('.', decimal_point)
+        formatted_tax = f"{float(data['totals']['taxAmount']):.2f}".replace('.', decimal_point)
+        formatted_total_ttc = f"{float(data['totals']['total_ttc']):.2f}".replace('.', decimal_point)
 
-        draw_total_row("Sous Total HT", formatted_subtotal)
-        draw_total_row("TVA", formatted_tax)
-        draw_total_row("Total TTC", formatted_total_ttc)
+        print(f"Currency sign is : {data['totals']['currencySign']}")
+        draw_total_row("Sous Total HT", f"{data['totals']['currencySign']} {formatted_subtotal}")
+        draw_total_row("TVA",  f"{data['totals']['currencySign']} {formatted_tax}")
+        draw_total_row("Total TTC", f"{data['totals']['currencySign']} {formatted_total_ttc}")
 
         self._draw_text("Acompte", total_label_x, current_y_right,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#717070'))
-        self._draw_text(f"{float(data['totals']['discountAmount']):.2f}".replace('.', ','), total_value_x, current_y_right,
+        self._draw_text(f"{data['totals']['currencySign']} {float(data['totals']['discountAmount']):.2f}".replace('.', decimal_point), total_value_x, current_y_right,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
         current_y_right -= (5 * mm)
 
@@ -390,7 +396,7 @@ class PDFGenerator:
         grand_total_text_y = current_y_right - (grand_total_rect_height / 2)
         self._draw_text("A PAYER", rect_x_start + (2 * mm), grand_total_text_y,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#FFFFFF'))
-        formatted_grand_total = f"{float(data['totals']['grandTotal']):.2f}".replace('.', ',')
+        formatted_grand_total = f"{data['totals']['currencySign']} {float(data['totals']['grandTotal']):.2f}".replace('.', decimal_point)
         self._draw_text(formatted_grand_total, total_value_x, grand_total_text_y,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#FFFFFF'), alignment='right')
 
@@ -436,7 +442,7 @@ class PDFGenerator:
         self.c = canvas.Canvas(self.file_path, pagesize=A4)
         self._draw_header(data)
         self._draw_bill_to_and_invoice_details(data)
-        self._draw_items_table(data['items'], True)
+        self._draw_items_table(data['items'], data['totals']['decimalPoint'], True)
         self._draw_totals_and_payment_method(data)
         self._draw_footer(data)
         self.c.save()
