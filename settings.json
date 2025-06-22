@@ -14,15 +14,15 @@
     "invoice": {
         "title": "Proforma",
         "validity": {
-            "number": 3,
-            "duration": "month"
+            "number": 5,
+            "duration": "day"
         },
         "modeOfPayment": [
             "cheque",
             "esp\u00e8ces"
         ],
-        "currency": "\u20ac",
-        "decimalPoint": ",",
+        "currency": "$",
+        "decimalPoint": ".",
         "tax": 17.0,
         "discount": 10.0
     },

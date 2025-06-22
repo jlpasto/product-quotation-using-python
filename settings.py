@@ -75,7 +75,7 @@ class Settings:
         self.currency_var = tk.StringVar(value="Euro")
         tk.Radiobutton(invoice_frame, text="DA (Dinar)", variable=self.currency_var, value="DA").grid(row=3, column=1, sticky="w")
         tk.Radiobutton(invoice_frame, text="$ (US Dollar)", variable=self.currency_var, value="$",).grid(row=3, column=2, sticky="w")
-        tk.Radiobutton(invoice_frame, text="€ (Euro)", variable=self.currency_var, value="€").grid(row=3, column=3, sticky="w")
+        tk.Radiobutton(invoice_frame, text="€ (Euro)", variable=self.currency_var, value="EUR").grid(row=3, column=3, sticky="w")
 
         tk.Label(invoice_frame, text="Decimal Point:").grid(row=4, column=0, sticky="w")
         self.decimal_var = tk.StringVar(value="Period")

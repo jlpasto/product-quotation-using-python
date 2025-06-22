@@ -333,6 +333,27 @@ class UserFormApp:
         future_date = datetime.now() + relativedelta(months=months)
         return future_date.strftime("%d/%m/%Y")
 
+    def get_invoice_validity(self, number = 3, duration="month"):
+        #Default: 3 months ahead
+        try:
+            future_date = relativedelta(months=number)
+            if duration == "day":
+                future_date = relativedelta(days=number)
+            elif duration == "week":
+                future_date = relativedelta(weeks=number)
+            elif duration == "month":
+                future_date = relativedelta(months=number)
+            else: # year
+                future_date = relativedelta(years=number)
+            validity_date = datetime.now() + future_date
+            return validity_date.strftime("%d/%m/%Y")
+        except Exception as e:
+            print(f"Error in get_invoice_validity(): {e}")
+            #Default: 3 months ahead when there is error
+            future_date = relativedelta(months=number)
+            validity_date = datetime.now() + future_date
+            return validity_date.strftime("%d/%m/%Y")
+        
     def has_missing_model(self, entries):
         return any(not entry.get('model') for entry in entries)
 
@@ -376,7 +397,7 @@ class UserFormApp:
 
         invoice_no = self.generate_invoice_number()
         invoice_date = self.get_invoice_current_date()
-        invoice_issue_date = self.get_invoice_issue_date()
+        invoice_issue_date = self.get_invoice_validity(set_validity_number, set_validity_duration)
 
         full_name = self.full_name.get().strip()
         address = self.address.get().strip()
