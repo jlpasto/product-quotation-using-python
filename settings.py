@@ -9,15 +9,39 @@ class Settings:
         self.root = root
         self.window = tk.Toplevel(self.root)
         self.window.title("Settings")
-        self.window.geometry("700x850")
+        self.window.geometry("600x600")
+        self.window.resizable(False, False)
         self.logo_path = ""
 
         self.existing_settings = existing_settings or {}
+        self.create_scrollable_frame()
         self.create_widgets()
+
+    def create_scrollable_frame(self):
+        container = tk.Frame(self.window)
+        container.pack(fill="both", expand=True)
+
+        canvas = tk.Canvas(container)
+        scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = tk.Frame(canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
 
     def create_widgets(self):
         # Company Information Section
-        company_frame = tk.LabelFrame(self.window, text="Company Information", padx=10, pady=10)
+        company_frame = tk.LabelFrame(self.scrollable_frame, text="Company Information", padx=10, pady=10)
         company_frame.pack(fill="x", padx=10, pady=5)
 
         self.companyName = self.create_entry(company_frame, "Company Name:", 0)
@@ -49,7 +73,7 @@ class Settings:
         self.logo_label.config(text=os.path.basename(self.logo_path) if self.logo_path else "No file selected")
 
         # Invoice Section
-        invoice_frame = tk.LabelFrame(self.window, text="Invoice", padx=10, pady=10)
+        invoice_frame = tk.LabelFrame(self.scrollable_frame, text="Invoice", padx=10, pady=10)
         invoice_frame.pack(fill="x", padx=10, pady=5)
 
         tk.Label(invoice_frame, text="Invoice Title:").grid(row=0, column=0, sticky="w")
@@ -71,19 +95,15 @@ class Settings:
         tk.Checkbutton(invoice_frame, text="espèces", variable=self.payment_especes).grid(row=2, column=2, sticky="w")
         tk.Checkbutton(invoice_frame, text="virement", variable=self.payment_virement).grid(row=2, column=3, sticky="w")
 
-        tk.Label(invoice_frame, text="Currency:").grid(row=3, column=0, sticky="w")
-        self.currency_var = tk.StringVar(value="Euro")
-        tk.Radiobutton(invoice_frame, text="DA (Dinar)", variable=self.currency_var, value="DA").grid(row=3, column=1, sticky="w")
-        tk.Radiobutton(invoice_frame, text="$ (US Dollar)", variable=self.currency_var, value="$",).grid(row=3, column=2, sticky="w")
-        tk.Radiobutton(invoice_frame, text="€ (Euro)", variable=self.currency_var, value="EUR").grid(row=3, column=3, sticky="w")
 
-        tk.Label(invoice_frame, text="Decimal Point:").grid(row=4, column=0, sticky="w")
+        tk.Label(invoice_frame, text="Decimal Point:").grid(row=3, column=0, sticky="w")
         self.decimal_var = tk.StringVar(value="Period")
         tk.Radiobutton(invoice_frame, text="Period", variable=self.decimal_var, value=".").grid(row=4, column=1, sticky="w")
         tk.Radiobutton(invoice_frame, text="Comma", variable=self.decimal_var, value=",").grid(row=4, column=2, sticky="w")
 
-        self.tax = self.create_entry(invoice_frame, "Tax Percent:", 5)
-        self.discount = self.create_entry(invoice_frame, "Discount Percent:", 6)
+        self.tax = self.create_entry(invoice_frame, "Tax Percent:", 4)
+        self.discount = self.create_entry(invoice_frame, "Discount Percent:", 5)
+        self.deliveryCost = self.create_entry(invoice_frame, "Delivery Cost (Dinar):", 6)
 
         invoice = self.existing_settings.get("invoice", {})
         self.invoice_title_var.set(invoice.get("title", "Proforma"))
@@ -94,13 +114,32 @@ class Settings:
         self.payment_cheque.set("cheque" in modes)
         self.payment_especes.set("espèces" in modes)
         self.payment_virement.set("virement" in modes)
-        self.currency_var.set(invoice.get("currency", "Euro"))
+
         self.decimal_var.set(invoice.get("decimalPoint", "Period"))
         self.tax.insert(0, str(invoice.get("tax", "19")))
         self.discount.insert(0, str(invoice.get("discount", "10")))
+        self.deliveryCost.insert(0, str(invoice.get("deliveryCost", "0")))
 
+
+        # Currency and rates Section
+        rates_frame = tk.LabelFrame(self.scrollable_frame, text="Rates and Currency", padx=10, pady=10)
+        rates_frame.pack(fill="x", padx=10, pady=5)
+
+        tk.Label(rates_frame, text="Currency:").grid(row=1, column=0, sticky="w")
+        self.currency_var = tk.StringVar(value="Euro")
+        tk.Radiobutton(rates_frame, text="DA (Dinar)", variable=self.currency_var, value="DA").grid(row=1, column=1, sticky="w")
+        tk.Radiobutton(rates_frame, text="$ (US Dollar)", variable=self.currency_var, value="$",).grid(row=1, column=2, sticky="w")
+        tk.Radiobutton(rates_frame, text="€ (Euro)", variable=self.currency_var, value="EUR").grid(row=1, column=3, sticky="w")
+
+        self.rate_EUR = self.create_entry(rates_frame, "1 Dinar = EUR:", 2)
+        self.rate_USD = self.create_entry(rates_frame, "1 Dinar = USD:", 3)
+        
+        self.currency_var.set(invoice.get("currency", "Euro"))
+        self.rate_EUR.insert(0, invoice.get("rate_EUR", "0.0066"))
+        self.rate_USD.insert(0, invoice.get("rate_USD", "0.0077"))
+        
         # Terms Section
-        terms_frame = tk.LabelFrame(self.window, text="Terms and Condition", padx=10, pady=10)
+        terms_frame = tk.LabelFrame(self.scrollable_frame, text="Terms and Condition", padx=10, pady=10)
         terms_frame.pack(fill="x", padx=10, pady=5)
         
         self.termsLabel = self.create_entry(terms_frame, "Terms Label:", 0)
@@ -113,7 +152,7 @@ class Settings:
         self.termsLine2.insert(0, terms.get("termsLine2", ""))
 
         # Signature Section
-        signature_frame = tk.LabelFrame(self.window, text="Signature", padx=10, pady=10)
+        signature_frame = tk.LabelFrame(self.scrollable_frame, text="Signature", padx=10, pady=10)
         signature_frame.pack(fill="x", padx=10, pady=5)
 
         self.nameCursive = self.create_entry(signature_frame, "Name Cursive:", 0)
@@ -126,7 +165,7 @@ class Settings:
         self.position.insert(0, signature.get("position", ""))
 
         # Save Button
-        tk.Button(self.window, text="Save", command=self.save_settings).pack(pady=20)
+        tk.Button(self.scrollable_frame, text="Save", command=self.save_settings, padx=30, pady=10).pack(pady=20)
 
     def create_entry(self, parent, label_text, row):
         tk.Label(parent, text=label_text).grid(row=row, column=0, sticky="w")
@@ -176,7 +215,10 @@ class Settings:
                 "currency": self.currency_var.get(),
                 "decimalPoint": self.decimal_var.get(),
                 "tax": float(self.tax.get()),
-                "discount": float(self.discount.get())
+                "discount": float(self.discount.get()),
+                "deliveryCost": float(self.deliveryCost.get()),
+                "rate_EUR": float(self.rate_EUR.get()),
+                "rate_USD":float(self.rate_USD.get())
             },
             "terms": {
                 "termsLabel": self.termsLabel.get(),

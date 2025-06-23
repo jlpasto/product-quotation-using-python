@@ -373,9 +373,11 @@ class PDFGenerator:
         formatted_subtotal = f"{float(data['totals']['subTotal']):.2f}".replace('.', decimal_point)
         formatted_tax = f"{float(data['totals']['taxAmount']):.2f}".replace('.', decimal_point)
         formatted_total_ttc = f"{float(data['totals']['total_ttc']):.2f}".replace('.', decimal_point)
+        formatted_delivery_cost = f"{float(data['totals']['deliveryCost']):.2f}".replace('.', decimal_point)
 
         print(f"Currency sign is : {data['totals']['currencySign']}")
         draw_total_row("Sous Total HT", f"{data['totals']['currencySign']} {formatted_subtotal}")
+        draw_total_row("Delivery Cost", f"{data['totals']['currencySign']} {formatted_delivery_cost}")
         draw_total_row("TVA",  f"{data['totals']['currencySign']} {formatted_tax}")
         draw_total_row("Total TTC", f"{data['totals']['currencySign']} {formatted_total_ttc}")
 

@@ -24,7 +24,10 @@
         "currency": "$",
         "decimalPoint": ".",
         "tax": 17.0,
-        "discount": 10.0
+        "discount": 10.0,
+        "deliveryCost": 2.0,
+        "rate_EUR": 0.0066,
+        "rate_USD": 0.0077
     },
     "terms": {
         "termsLabel": "Terms & Conditions:",
