@@ -29,7 +29,7 @@ class UserFormApp:
     def __init__(self, root):
         self.root = root
         self.root.title("PDF Generator")
-        self.root.geometry("1200x700")
+        self.root.geometry("1300x700")
 
         self.model_variants = {
             "Square": csv_carre_keys_list,
@@ -337,6 +337,17 @@ class UserFormApp:
             unit_amount = variant_price + color_prices_average + color_supplement_in_dinar
             total_amount = unit_amount * qty
 
+            print(f"Variant price: {variant_price}")
+            if filtered_color_arr:
+                joined_string = ', '.join(filtered_color_arr)
+                print(f"joined_string {joined_string}")
+            else:
+                print("No color found")
+            print(f"color_prices_average: {color_prices_average}")
+            print(f"Number of color : {color_supplement}")
+            print(f"color_supplement_in_dinar price: {color_supplement_in_dinar}")
+            print(f"unit_amount: {unit_amount}")
+
             entry = {
                 "model": row["Model"].get(),
                 "variant": row["Variant"].get(),
@@ -390,7 +401,7 @@ class UserFormApp:
     def has_missing_model(self, entries):
         return any(not entry.get('model') for entry in entries)
 
-    def get_conversion_rates(self, currency_sign = "DA"):
+    def get_conversion_rates(self, currency_sign = "da"):
         """
         Returns the conversion rates from Dinar to USD and EUR.
         Base currency: Dinar
@@ -398,7 +409,7 @@ class UserFormApp:
         Returns:
             int : The current convertion from DInar to selected currency
         """
-        if currency_sign == "$":
+        if currency_sign == "USD":
             return self.conversion_rates["USD"]
         elif currency_sign == "EUR":
             return self.conversion_rates["EUR"]

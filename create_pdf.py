@@ -32,7 +32,7 @@ class PDFGenerator:
             pdfmetrics.registerFont(TTFont("Charter", "fonts/Charter Regular.ttf"))
             pdfmetrics.registerFont(TTFont("Charter-Bold", "fonts/Charter Bold.ttf"))
             pdfmetrics.registerFont(TTFont("Times-Roman-Bold", "fonts/timesbd.ttf"))
-            pdfmetrics.registerFont(TTFont("Kunstler", "fonts/KUNSTLER.ttf"))
+            pdfmetrics.registerFont(TTFont("Rounhand-Bold", "fonts/Roundhand Bold.ttf"))
         except Exception as e:
             print(f"Font registration failed: {e}")
 
@@ -374,16 +374,20 @@ class PDFGenerator:
         formatted_tax = f"{float(data['totals']['taxAmount']):.2f}".replace('.', decimal_point)
         formatted_total_ttc = f"{float(data['totals']['total_ttc']):.2f}".replace('.', decimal_point)
         formatted_delivery_cost = f"{float(data['totals']['deliveryCost']):.2f}".replace('.', decimal_point)
+        formatted_discount_amt = f"{float(data['totals']['discountAmount']):.2f}".replace('.', decimal_point)
+        formatted_grand_total = f"{float(data['totals']['grandTotal']):.2f}".replace('.', decimal_point)
+        
+        currency_sign = f"{data['totals']['currencySign']}"
 
-        print(f"Currency sign is : {data['totals']['currencySign']}")
-        draw_total_row("Sous Total HT", f"{data['totals']['currencySign']} {formatted_subtotal}")
-        draw_total_row("Delivery Cost", f"{data['totals']['currencySign']} {formatted_delivery_cost}")
-        draw_total_row("TVA",  f"{data['totals']['currencySign']} {formatted_tax}")
-        draw_total_row("Total TTC", f"{data['totals']['currencySign']} {formatted_total_ttc}")
+        print(f"Currency sign is : {currency_sign}")
+        draw_total_row("Sous Total HT", f"{formatted_subtotal} {currency_sign}")
+        draw_total_row("Delivery Cost", f"{formatted_delivery_cost} {currency_sign}")
+        draw_total_row("TVA",  f"{formatted_tax} {currency_sign}")
+        draw_total_row("Total TTC", f"{formatted_total_ttc} {currency_sign}")
 
         self._draw_text("Acompte", total_label_x, current_y_right,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#717070'))
-        self._draw_text(f"{data['totals']['currencySign']} {float(data['totals']['discountAmount']):.2f}".replace('.', decimal_point), total_value_x, current_y_right,
+        self._draw_text(f"{formatted_discount_amt} {currency_sign}", total_value_x, current_y_right,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
         current_y_right -= (5 * mm)
 
@@ -398,8 +402,7 @@ class PDFGenerator:
         grand_total_text_y = current_y_right - (grand_total_rect_height / 2)
         self._draw_text("A PAYER", rect_x_start + (2 * mm), grand_total_text_y,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#FFFFFF'))
-        formatted_grand_total = f"{data['totals']['currencySign']} {float(data['totals']['grandTotal']):.2f}".replace('.', decimal_point)
-        self._draw_text(formatted_grand_total, total_value_x, grand_total_text_y,
+        self._draw_text(f"{formatted_grand_total} {currency_sign}", total_value_x, grand_total_text_y,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#FFFFFF'), alignment='right')
 
         # Update vertical pointer
@@ -429,14 +432,14 @@ class PDFGenerator:
         signature_center_x = self.page_width - self.right_margin - (30 * mm)
         signature_y_start = self.bottom_margin + (21 * mm)
         self._draw_text(data['signature']['name'], signature_center_x, signature_y_start,
-                        font_name='Kunstler', font_size=18, color=colors.HexColor('#333333'), alignment='center')
+                        font_name='Rounhand-Bold', font_size=14, color=colors.HexColor('#333333'), alignment='center')
 
         self.c.setFillColor(colors.HexColor('#333333'))
         self.c.setStrokeColor(colors.HexColor('#333333'))
         self.c.rect(signature_center_x - (30 * mm), signature_y_start - (4 * mm), 60 * mm, 0.1 * mm, fill=1)
 
         self._draw_text(data['signature']['fullName'], signature_center_x , signature_y_start - (13 * mm),
-                        font_name='Times-Roman-Bold', font_size=14, color=colors.HexColor('#333333'), alignment='center')
+                        font_name='Times-Roman-Bold', font_size=12, color=colors.HexColor('#333333'), alignment='center')
         self._draw_text(data['signature']['title'], signature_center_x, signature_y_start - (19 * mm),
                         font_name='Times-Roman', font_size=12, color=colors.HexColor('#333333'), alignment='center')
     def create_pdf(self, data):

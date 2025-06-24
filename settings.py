@@ -127,14 +127,14 @@ class Settings:
 
         tk.Label(rates_frame, text="Currency:").grid(row=1, column=0, sticky="w")
         self.currency_var = tk.StringVar(value="Euro")
-        tk.Radiobutton(rates_frame, text="DA (Dinar)", variable=self.currency_var, value="DA").grid(row=1, column=1, sticky="w")
-        tk.Radiobutton(rates_frame, text="$ (US Dollar)", variable=self.currency_var, value="$",).grid(row=1, column=2, sticky="w")
-        tk.Radiobutton(rates_frame, text="€ (Euro)", variable=self.currency_var, value="EUR").grid(row=1, column=3, sticky="w")
+        tk.Radiobutton(rates_frame, text="DA (Dinar)", variable=self.currency_var, value="da").grid(row=1, column=1, sticky="w")
+        tk.Radiobutton(rates_frame, text="USD (US Dollar)", variable=self.currency_var, value="USD",).grid(row=1, column=2, sticky="w")
+        tk.Radiobutton(rates_frame, text="EUR (Euro)", variable=self.currency_var, value="EUR").grid(row=1, column=3, sticky="w")
 
         self.rate_EUR = self.create_entry(rates_frame, "1 Dinar = EUR:", 2)
         self.rate_USD = self.create_entry(rates_frame, "1 Dinar = USD:", 3)
         
-        self.currency_var.set(invoice.get("currency", "Euro"))
+        self.currency_var.set(invoice.get("currency", "da"))
         self.rate_EUR.insert(0, invoice.get("rate_EUR", "0.0066"))
         self.rate_USD.insert(0, invoice.get("rate_USD", "0.0077"))
         

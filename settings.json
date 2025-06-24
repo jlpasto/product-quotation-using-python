@@ -21,7 +21,7 @@
             "cheque",
             "esp\u00e8ces"
         ],
-        "currency": "$",
+        "currency": "da",
         "decimalPoint": ".",
         "tax": 17.0,
         "discount": 10.0,
@@ -35,7 +35,7 @@
         "termsLine2": "\u2022 Exercitation ullamco laboris nisi ut aliquip ex ea commodo"
     },
     "signature": {
-        "nameCursive": "A.K. YESSAD",
+        "nameCursive": "A.K.  YESSAD",
         "fullName": "Anne-Kahina YESSAD",
         "position": "Directrice g\u00e9n\u00e9rale"
     }
