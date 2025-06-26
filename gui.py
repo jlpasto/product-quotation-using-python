@@ -313,7 +313,7 @@ class UserFormApp:
 
         # Since rates are Dinar to currency, we invert it to convert back to Dinar
         amount_in_dinar = amount / rate
-        return round(amount_in_dinar, 2)
+        return round(amount_in_dinar, 6)
     
 
     def collect_entry_data(self):
@@ -327,14 +327,17 @@ class UserFormApp:
             filtered_color_arr = [color for color in color_arr if color]
             color_prices_arr = [csv_couleur_dict.get(row[f"Color{i}"].get()) for i in range(1, 6)]
             color_prices_average = self.average_prices(color_prices_arr)
-            color_supplement = len(filtered_color_arr) # the number of colors selected
+            color_supplement_len = len(filtered_color_arr) # the number of colors selected
             qty_str = row["Quantity"].get()
             qty = int(qty_str) if qty_str.strip().isdigit() and int(qty_str) > 0 else 1
             selected_model = row["Model"].get()
             selected_variant = row["Variant"].get()
             variant_price = self.get_variant_price(selected_model, selected_variant)
-            color_supplement_in_dinar = self.convert_currency_to_dinar(amount=color_supplement, currency="EUR")
-            unit_amount = variant_price + color_prices_average + color_supplement_in_dinar
+
+            #color_supplement_in_dinar = self.convert_currency_to_dinar(amount=color_supplement, currency="Dinar")
+            COLOR_SUPPLEMENT_PER_COLOR_DA_PRICE = 250 # fixed price for every color supplement
+            color_supplement_in_dinar_total = color_supplement_len * COLOR_SUPPLEMENT_PER_COLOR_DA_PRICE
+            unit_amount = variant_price + color_prices_average + color_supplement_in_dinar_total
             total_amount = unit_amount * qty
 
             print(f"Variant price: {variant_price}")
@@ -344,8 +347,8 @@ class UserFormApp:
             else:
                 print("No color found")
             print(f"color_prices_average: {color_prices_average}")
-            print(f"Number of color : {color_supplement}")
-            print(f"color_supplement_in_dinar price: {color_supplement_in_dinar}")
+            print(f"Number of color : {color_supplement_len}")
+            print(f"color_supplement_in_dinar price: {color_supplement_in_dinar_total}")
             print(f"unit_amount: {unit_amount}")
 
             entry = {
