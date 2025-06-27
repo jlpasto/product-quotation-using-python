@@ -1,8 +1,9 @@
+import shutil
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import json
 import os
-import shutil
+
 
 class Settings:
     def __init__(self, root, existing_settings=None):
@@ -178,19 +179,30 @@ class Settings:
             title="Select Logo Image",
             filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.gif")]
         )
+
+
         if filepath:
-            # Create logos folder if not exist
-            os.makedirs("images", exist_ok=True)
+            try:
+                # Create logos folder if not exist
+                os.makedirs("images", exist_ok=True)
 
-            filename = os.path.basename(filepath)
-            dest_path = os.path.join("images", filename)
+                filename = os.path.basename(filepath)
+                dest_path = os.path.join("images", filename)
 
-            # Copy the file
-            shutil.copy2(filepath, dest_path)
+                # Normalize path for cross-platform safety
+                dest_path = os.path.normpath(dest_path)
 
-            self.logo_path = dest_path  # store relative local path
-            self.logo_label.config(text=filename)
+                # Copy the file
+                if not os.path.exists(dest_path):
+                    shutil.copy2(filepath, dest_path)
 
+                # Store relative path for portability
+                self.logo_path = os.path.relpath(dest_path)
+                self.logo_label.config(text=filename)
+
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to upload logo:\n{str(e)}")
+        
     def save_settings(self):
         data = {
             "company": {

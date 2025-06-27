@@ -165,26 +165,40 @@ class UserFormApp:
         # Add Entry Button
         tk.Button(self.root, text="Add Entry", command=self.add_entry_row).pack(pady=10)
 
-        # Table Frame
+
+        # Table Container
         table_container = tk.Frame(self.root)
         table_container.pack(padx=20, fill="both", expand=True)
 
-        canvas = tk.Canvas(table_container)
-        scrollbar = tk.Scrollbar(table_container, orient="vertical", command=canvas.yview)
+        # Frame for canvas + vertical scrollbar
+        canvas_frame = tk.Frame(table_container)
+        canvas_frame.pack(fill="both", expand=True)
+
+        canvas = tk.Canvas(canvas_frame)
+        v_scrollbar = tk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
+        h_scrollbar = tk.Scrollbar(table_container, orient="horizontal", command=canvas.xview)
+
+        canvas.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+
+        v_scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+        h_scrollbar.pack(side="bottom", fill="x")
+
         self.table_frame = tk.Frame(canvas)
 
         self.table_frame.bind(
             "<Configure>",
-            lambda e: canvas.configure(
-                scrollregion=canvas.bbox("all")
-            )
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
 
         canvas.create_window((0, 0), window=self.table_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+
+        #canvas.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
 
         canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        v_scrollbar.pack(side="right", fill="y")
+        h_scrollbar.pack(side="bottom", fill="x")
+
 
         # Table Header
         headers = ["Model", "Variant", "Qty", "Color 1", "Color 2", "Color 3", "Color 4", "Color 5", "Delete"]
