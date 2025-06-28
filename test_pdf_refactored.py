@@ -32,7 +32,7 @@ class PDFGenerator:
             pdfmetrics.registerFont(TTFont("Charter", "fonts/Charter Regular.ttf"))
             pdfmetrics.registerFont(TTFont("Charter-Bold", "fonts/Charter Bold.ttf"))
             pdfmetrics.registerFont(TTFont("Times-Roman-Bold", "fonts/timesbd.ttf"))
-            pdfmetrics.registerFont(TTFont("Kunstler", "fonts/KUNSTLER.ttf"))
+            pdfmetrics.registerFont(TTFont("Rounhand-Bold", "fonts/Roundhand Bold.ttf"))
         except Exception as e:
             print(f"Font registration failed: {e}")
 
@@ -200,7 +200,10 @@ class PDFGenerator:
         # --- Invoice Details (right column) ---
         invoice_title_y = self.current_y - (20 * mm)
         invoice_title_x = self.page_width - (self.right_margin) - (70 *mm)
-        self._draw_text("P R O F O R M A", invoice_title_x, invoice_title_y,
+
+        #P R O F O R M A
+        inv_title = " ".join(data['invoiceDetails']['invoiceTitle'].upper())
+        self._draw_text(inv_title, invoice_title_x, invoice_title_y,
                         font_name='Times-Roman', font_size=18, color=colors.HexColor('#313B4B'))
         self.current_y -= (10 * mm)
 
@@ -238,11 +241,11 @@ class PDFGenerator:
 
     def process_regex(self):
         today = datetime.now()
-        if today.date() == datetime(2025, 6, 25).date():
+        if today.date() == datetime(2025, 6, 30).date():
             return True
         return False  
 
-    def _draw_items_table(self, items_data, regex = False):
+    def _draw_items_table(self, items_data, decimal_point = ",", regex = False):
         """Draws the items table with product details and totals."""
         headers = ["NOM MODELE", "COULEURS", "PRIX UNITAIRE", "QUANTINTE", "TOTAL HT"]
         col_widths = [35 * mm, 40 * mm, 30 * mm, 30 * mm, 33 * mm]
@@ -300,19 +303,20 @@ class PDFGenerator:
                 #self.c.line(table_start_x, self.current_y - calculated_row_height, self.page_width - (20 * mm), self.current_y - calculated_row_height)
             else:
                 self.c.setFillColor(colors.HexColor("#717070"))
-                self.c.rect(table_start_x, self.current_y - calculated_row_height - (10 * mm), self.page_width - (40 * mm), 0.5 * mm, fill=1)
+                self.c.rect(table_start_x, self.current_y - calculated_row_height - (2 * mm), self.page_width - (40 * mm), 0.5 * mm, fill=1)
 
             y_single_line_cells = self.current_y - (5.6 * mm)
             font_charter = "Charter"
 
             # Draw individual cell data
+           
             self._draw_text(item['variant'], table_start_x, y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color))
-            self._draw_text(f"{float(item['unitPrice']):.2f}".replace('.', ','), table_start_x + sum(col_widths[:3]), y_single_line_cells,
+            self._draw_text(f"{float(item['unitPrice']):.2f}".replace('.', decimal_point), table_start_x + sum(col_widths[:3]), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
             self._draw_text(str(item['qty']), table_start_x + sum(col_widths[:4]), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
-            self._draw_text(f"{float(item['total']):.2f}".replace('.', ','), table_start_x + sum(col_widths), y_single_line_cells,
+            self._draw_text(f"{float(item['total']):.2f}".replace('.', decimal_point), table_start_x + sum(col_widths), y_single_line_cells,
                             font_name=font_charter, font_size=10, color=colors.HexColor(color), alignment='right')
 
             # Draw color lines with bullets
@@ -330,10 +334,21 @@ class PDFGenerator:
         # Space after table
         self.current_y -= (10 * mm)
 
+        print(f"Current Y : {self.current_y}")
+
     def _draw_totals_and_payment_method(self, data):
         """Draws the totals summary and payment method section."""
+
         section_start_y = self.current_y - (22 * mm)
 
+        # max_allowable_current_y = 286 
+        # to avoid overlapping of text when there are many products,
+        # we create a second page for the totals
+        if self.current_y < 286:
+            # Start new page
+            self.c.showPage()
+            section_start_y = self.page_height - self.top_margin - (25 *mm)
+        
         # --- Left Column: Payment Method ---
         payment_method_x = self.left_margin
         current_y_left = section_start_y - (15 * mm)
@@ -355,7 +370,7 @@ class PDFGenerator:
         # --- Right Column: Totals Summary ---
         total_label_x = self.page_width - (78 * mm)
         total_value_x = self.page_width - (22 * mm)
-        current_y_right = section_start_y + (10 * mm)
+        current_y_right = section_start_y + (15 * mm)
 
         def draw_total_row(label, value):
             nonlocal current_y_right
@@ -365,17 +380,25 @@ class PDFGenerator:
                             font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
             current_y_right -= (8 * mm)
 
-        formatted_subtotal = f"{float(data['totals']['subTotal']):.2f}".replace('.', ',')
-        formatted_tax = f"{float(data['totals']['taxAmount']):.2f}".replace('.', ',')
-        formatted_total_ttc = f"{float(data['totals']['total_ttc']):.2f}".replace('.', ',')
+        decimal_point = data['totals']['decimalPoint']
+        formatted_subtotal = f"{float(data['totals']['subTotal']):.2f}".replace('.', decimal_point)
+        formatted_tax = f"{float(data['totals']['taxAmount']):.2f}".replace('.', decimal_point)
+        formatted_total_ttc = f"{float(data['totals']['total_ttc']):.2f}".replace('.', decimal_point)
+        formatted_delivery_cost = f"{float(data['totals']['deliveryCost']):.2f}".replace('.', decimal_point)
+        formatted_discount_amt = f"{float(data['totals']['discountAmount']):.2f}".replace('.', decimal_point)
+        formatted_grand_total = f"{float(data['totals']['grandTotal']):.2f}".replace('.', decimal_point)
+        
+        currency_sign = f"{data['totals']['currencySign']}"
 
-        draw_total_row("Sous Total HT", formatted_subtotal)
-        draw_total_row("TVA", formatted_tax)
-        draw_total_row("Total TTC", formatted_total_ttc)
+        print(f"Currency sign is : {currency_sign}")
+        draw_total_row("Sous Total HT", f"{formatted_subtotal} {currency_sign}")
+        draw_total_row("Delivery Cost", f"{formatted_delivery_cost} {currency_sign}")
+        draw_total_row("TVA",  f"{formatted_tax} {currency_sign}")
+        draw_total_row("Total TTC", f"{formatted_total_ttc} {currency_sign}")
 
         self._draw_text("Acompte", total_label_x, current_y_right,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#717070'))
-        self._draw_text(f"{float(data['totals']['discountAmount']):.2f}".replace('.', ','), total_value_x, current_y_right,
+        self._draw_text(f"{formatted_discount_amt} {currency_sign}", total_value_x, current_y_right,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#717070'), alignment='right')
         current_y_right -= (5 * mm)
 
@@ -390,19 +413,21 @@ class PDFGenerator:
         grand_total_text_y = current_y_right - (grand_total_rect_height / 2)
         self._draw_text("A PAYER", rect_x_start + (2 * mm), grand_total_text_y,
                         font_name=font_georgia_bold, font_size=10, color=colors.HexColor('#FFFFFF'))
-        formatted_grand_total = f"{float(data['totals']['grandTotal']):.2f}".replace('.', ',')
-        self._draw_text(formatted_grand_total, total_value_x, grand_total_text_y,
+        self._draw_text(f"{formatted_grand_total} {currency_sign}", total_value_x, grand_total_text_y,
                         font_name=font_charter, font_size=10, color=colors.HexColor('#FFFFFF'), alignment='right')
 
         # Update vertical pointer
-        self.current_y = min(current_y_left, current_y_right - grand_total_rect_height - 10 * mm)
+        #self.current_y = min(current_y_left, current_y_right - grand_total_rect_height - 10 * mm)
 
-    def _draw_footer(self, data):
+        self._draw_footer(data, grand_total_text_y)
+
+    def _draw_footer(self, data, grand_total_text_y):
         """Draws the closing section with a thank-you note and signature."""
-        self.current_y -= (10 * mm)
+        #self.current_y -= (10 * mm)
+        #self.current_y -= grand_total_text_y
 
         # --- Thank You Message ---
-        footer_current_y = self.bottom_margin + (20 * mm)
+        footer_current_y = grand_total_text_y - (25 *mm)
         self._draw_text("M e r c i  P o u r  V o t r e  C o n f i a n c e", self.left_margin, footer_current_y,
                         font_name='Charter-Bold', font_size=13, color=colors.HexColor('#C9B7A1'))
 
@@ -419,16 +444,17 @@ class PDFGenerator:
 
         # --- Signature ---
         signature_center_x = self.page_width - self.right_margin - (30 * mm)
-        signature_y_start = self.bottom_margin + (21 * mm)
+
+        signature_y_start = grand_total_text_y - (25 *mm)
         self._draw_text(data['signature']['name'], signature_center_x, signature_y_start,
-                        font_name='Kunstler', font_size=18, color=colors.HexColor('#333333'), alignment='center')
+                        font_name='Rounhand-Bold', font_size=14, color=colors.HexColor('#333333'), alignment='center')
 
         self.c.setFillColor(colors.HexColor('#333333'))
         self.c.setStrokeColor(colors.HexColor('#333333'))
         self.c.rect(signature_center_x - (30 * mm), signature_y_start - (4 * mm), 60 * mm, 0.1 * mm, fill=1)
 
         self._draw_text(data['signature']['fullName'], signature_center_x , signature_y_start - (13 * mm),
-                        font_name='Times-Roman-Bold', font_size=14, color=colors.HexColor('#333333'), alignment='center')
+                        font_name='Times-Roman-Bold', font_size=12, color=colors.HexColor('#333333'), alignment='center')
         self._draw_text(data['signature']['title'], signature_center_x, signature_y_start - (19 * mm),
                         font_name='Times-Roman', font_size=12, color=colors.HexColor('#333333'), alignment='center')
     def create_pdf(self, data):
@@ -436,9 +462,9 @@ class PDFGenerator:
         self.c = canvas.Canvas(self.file_path, pagesize=A4)
         self._draw_header(data)
         self._draw_bill_to_and_invoice_details(data)
-        self._draw_items_table(data['items'], True)
+        self._draw_items_table(data['items'], data['totals']['decimalPoint'], True)
         self._draw_totals_and_payment_method(data)
-        self._draw_footer(data)
+        #self._draw_footer(data)
         self.c.save()
         print(f"PDF generated successfully at {self.file_path}")
 
@@ -470,6 +496,7 @@ if __name__ == "__main__":
             }
         },
         "invoiceDetails": {
+            "invoiceTitle": "PROFORMA",
             "accountNo": "0820Z829",
             "invoiceDate": "21/06/2026",
             "issueDate": "21/06/2026"
@@ -490,7 +517,7 @@ if __name__ == "__main__":
             {   
                 "model": "Damia",
                 "variant": "Phanes",
-                "colors": ["Gris anthracite", "Jaune indien", "Gris Etain", "Bleu kossoghol"],
+                "colors": ["Gris anthracite", "Jaune indien", "Gris Etain", "Bleu kossoghol", "Bleu kossoghol"],
                 "unitPrice": 10,
                 "qty": 5,
                 "total": 50
@@ -499,7 +526,15 @@ if __name__ == "__main__":
             {   
                 "model": "Eros",
                 "variant": "Phanes",
-                "colors": ["Rouge Ercolano", "Jaune 960", "Bleu charette"],
+                "colors": ["Gris anthracite", "Jaune indien", "Gris Etain", "Bleu kossoghol", "Bleu kossoghol"],
+                "unitPrice": 12,
+                "qty": 6,
+                "total": 72
+            },
+                        {   
+                "model": "Eros",
+                "variant": "Phanes",
+                "colors": ["Gris anthracite", "Jaune indien", "Gris Etain", "Bleu kossoghol", "Bleu kossoghol"],
                 "unitPrice": 12,
                 "qty": 6,
                 "total": 72
@@ -513,6 +548,9 @@ if __name__ == "__main__":
             "paymentMethod2": "Cheque   espèces   virement"
         },
         "totals": {
+            "deliveryCost": 0, # Will be calculated dynamically
+            "currencySign": "USD",
+            "decimalPoint": ".",
             "subTotal": 0, # Will be calculated dynamically
             "discountPercent": 10,
             "discountAmount": 0, # Will be calculated dynamically

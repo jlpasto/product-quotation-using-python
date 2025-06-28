@@ -303,7 +303,7 @@ class PDFGenerator:
                 #self.c.line(table_start_x, self.current_y - calculated_row_height, self.page_width - (20 * mm), self.current_y - calculated_row_height)
             else:
                 self.c.setFillColor(colors.HexColor("#717070"))
-                self.c.rect(table_start_x, self.current_y - calculated_row_height - (10 * mm), self.page_width - (40 * mm), 0.5 * mm, fill=1)
+                self.c.rect(table_start_x, self.current_y - calculated_row_height - (2 * mm), self.page_width - (40 * mm), 0.5 * mm, fill=1)
 
             y_single_line_cells = self.current_y - (5.6 * mm)
             font_charter = "Charter"
@@ -334,10 +334,21 @@ class PDFGenerator:
         # Space after table
         self.current_y -= (10 * mm)
 
+        print(f"Current Y : {self.current_y}")
+
     def _draw_totals_and_payment_method(self, data):
         """Draws the totals summary and payment method section."""
+
         section_start_y = self.current_y - (22 * mm)
 
+        # max_allowable_current_y = 286 
+        # to avoid overlapping of text when there are many products,
+        # we create a second page for the totals
+        if self.current_y < 286:
+            # Start new page
+            self.c.showPage()
+            section_start_y = self.page_height - self.top_margin - (25 *mm)
+        
         # --- Left Column: Payment Method ---
         payment_method_x = self.left_margin
         current_y_left = section_start_y - (15 * mm)
@@ -359,7 +370,7 @@ class PDFGenerator:
         # --- Right Column: Totals Summary ---
         total_label_x = self.page_width - (78 * mm)
         total_value_x = self.page_width - (22 * mm)
-        current_y_right = section_start_y + (10 * mm)
+        current_y_right = section_start_y + (15 * mm)
 
         def draw_total_row(label, value):
             nonlocal current_y_right
@@ -406,14 +417,17 @@ class PDFGenerator:
                         font_name=font_charter, font_size=10, color=colors.HexColor('#FFFFFF'), alignment='right')
 
         # Update vertical pointer
-        self.current_y = min(current_y_left, current_y_right - grand_total_rect_height - 10 * mm)
+        #self.current_y = min(current_y_left, current_y_right - grand_total_rect_height - 10 * mm)
 
-    def _draw_footer(self, data):
+        self._draw_footer(data, grand_total_text_y)
+
+    def _draw_footer(self, data, grand_total_text_y):
         """Draws the closing section with a thank-you note and signature."""
-        self.current_y -= (10 * mm)
+        #self.current_y -= (10 * mm)
+        #self.current_y -= grand_total_text_y
 
         # --- Thank You Message ---
-        footer_current_y = self.bottom_margin + (20 * mm)
+        footer_current_y = grand_total_text_y - (25 *mm)
         self._draw_text("M e r c i  P o u r  V o t r e  C o n f i a n c e", self.left_margin, footer_current_y,
                         font_name='Charter-Bold', font_size=13, color=colors.HexColor('#C9B7A1'))
 
@@ -430,7 +444,8 @@ class PDFGenerator:
 
         # --- Signature ---
         signature_center_x = self.page_width - self.right_margin - (30 * mm)
-        signature_y_start = self.bottom_margin + (21 * mm)
+
+        signature_y_start = grand_total_text_y - (25 *mm)
         self._draw_text(data['signature']['name'], signature_center_x, signature_y_start,
                         font_name='Rounhand-Bold', font_size=14, color=colors.HexColor('#333333'), alignment='center')
 
@@ -449,6 +464,6 @@ class PDFGenerator:
         self._draw_bill_to_and_invoice_details(data)
         self._draw_items_table(data['items'], data['totals']['decimalPoint'], True)
         self._draw_totals_and_payment_method(data)
-        self._draw_footer(data)
+        #self._draw_footer(data)
         self.c.save()
         print(f"PDF generated successfully at {self.file_path}")
