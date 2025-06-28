@@ -177,7 +177,11 @@ class Settings:
     def upload_logo(self):
         filepath = filedialog.askopenfilename(
             title="Select Logo Image",
-            filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.gif")]
+            #filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.gif")]
+            #Tkinter on macOS expects each file type pattern to be in a tuple, 
+            # not a single string with semicolons (;)
+            filetypes=[("Image files", ("*.png", "*.jpg", "*.jpeg", "*.gif"))]
+
         )
 
 
