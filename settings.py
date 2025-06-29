@@ -55,10 +55,10 @@ class Settings:
         self.nis = self.create_entry(company_frame, "Nis:", 7)
         self.article = self.create_entry(company_frame, "Article:", 8)
         
-        tk.Label(company_frame, text="Logo:").grid(row=9, column=0, sticky="w")
-        self.logo_label = tk.Label(company_frame, text="No file selected")
-        self.logo_label.grid(row=9, column=1, sticky="w")
-        tk.Button(company_frame, text="Upload Image", command=self.upload_logo).grid(row=9, column=2, padx=5)
+        #tk.Label(company_frame, text="Logo:").grid(row=9, column=0, sticky="w")
+        #self.logo_label = tk.Label(company_frame, text="No file selected")
+        #self.logo_label.grid(row=9, column=1, sticky="w")
+        #tk.Button(company_frame, text="Upload Image", command=self.upload_logo).grid(row=9, column=2, padx=5)
 
         company = self.existing_settings.get("company", {})
         self.companyName.insert(0, company.get("companyName", ""))
@@ -70,8 +70,8 @@ class Settings:
         self.nif.insert(0, company.get("nif", ""))
         self.nis.insert(0, company.get("nis", ""))
         self.article.insert(0, company.get("article", ""))
-        self.logo_path = company.get("logoPath", "")
-        self.logo_label.config(text=os.path.basename(self.logo_path) if self.logo_path else "No file selected")
+        #self.logo_path = company.get("logoPath", "")
+        #self.logo_label.config(text=os.path.basename(self.logo_path) if self.logo_path else "No file selected")
 
         # Invoice Section
         invoice_frame = tk.LabelFrame(self.scrollable_frame, text="Invoice", padx=10, pady=10)

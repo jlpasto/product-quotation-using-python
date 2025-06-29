@@ -553,6 +553,12 @@ class UserFormApp:
 
             return file_path
         
+        def set_logo_path_fixed():
+            # Dynamically return the logo path relative to the current working directory
+            base_dir = os.getcwd()  # or use os.path.dirname(__file__) for script directory
+            return os.path.join(base_dir, 'images', 'logo.png')
+        
+
         file_path = create_filepath()
         if not file_path:
             return
@@ -560,7 +566,8 @@ class UserFormApp:
         settings = self.load_settings()
         # Header details
         HEADER_COMPANY_NAME = set_company_name
-        HEADER_LOGO_PATH = set_logo_path
+        HEADER_LOGO_PATH = set_logo_path_fixed()
+        print(f"HEADER_LOGO_PATH : {HEADER_LOGO_PATH}")
         HEADER_ADDRESS_LINE_1 = set_address_line_1
         HEADER_ADDRESS_LINE_2 = set_address_line_2
         HEADER_PHONE = set_company_phone
