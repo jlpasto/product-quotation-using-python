@@ -17,7 +17,7 @@ A simple tool that generates quotations in PDF format. The application provides 
 - 🖥️ User-friendly graphical interface  
 - 📊 Customizable CSV data management  
 - 🔄 Easy update and replacement of resource files using settings  
-- 🖥️💻 Cross-platform (MacOS app distribution mentioned)  
+- 🖥️💻 Cross-platform
 
 ## 📂 Folder Structure
 
